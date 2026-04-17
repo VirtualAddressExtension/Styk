@@ -8,8 +8,7 @@ import (
 )
 
 type App struct {
-	ctx      context.Context
-	IsHidden bool
+	ctx context.Context
 }
 
 func NewApp() *App {
@@ -18,14 +17,6 @@ func NewApp() *App {
 
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
-
-	runtime.EventsOn(ctx, "wails:window-hide", func(optionalData ...interface{}) {
-		a.IsHidden = true
-	})
-
-	runtime.EventsOn(ctx, "wails:window-show", func(optionalData ...interface{}) {
-		a.IsHidden = false
-	})
 }
 
 func (a *App) Greet(name string) string {
@@ -33,17 +24,15 @@ func (a *App) Greet(name string) string {
 }
 
 func (a *App) ShowApp() {
-	runtime.Show(a.ctx)
-	a.IsHidden = false
+	runtime.WindowShow(a.ctx)
 }
 
 func (a *App) HideApp() {
-	runtime.Hide(a.ctx)
-	a.IsHidden = true
+	runtime.WindowHide(a.ctx)
 }
 
 func (a *App) IsAppHidden() bool {
-	return a.IsHidden
+	return runtime.WindowIsNormal(a.ctx)
 }
 
 func (a *App) CloseApp() {
