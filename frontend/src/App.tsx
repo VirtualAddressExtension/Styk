@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Cloud, HardDrive, Plus, X, Trash2, Server, Shield, Loader2 } from 'lucide-react';
+import { Cloud, HardDrive, Plus, X, Trash2, Server, Shield, Loader2, Filter } from 'lucide-react';
 import logo from './assets/images/logo-universal.png';
 import { ProviderType, openBrowserAuth, mountDriveLogic, unmountDriveLogic } from './logic.js';
 import './App.css';
@@ -9,7 +9,6 @@ interface CloudProvider {
   id: ProviderType;
   name: string;
   icon: React.ReactNode;
-  iconClass: string;
   authType: 'oauth' | 'form';
   requires: string[];
 }
@@ -24,10 +23,10 @@ interface MountedDrive {
 }
 
 const PROVIDERS: CloudProvider[] = [
-  { id: 'Yandex', name: 'Яндекс.Диск', icon: <Cloud />, iconClass: 'icon-yandex', authType: 'oauth', requires: [] },
-  { id: 'Nextcloud', name: 'Nextcloud', icon: <Server />, iconClass: 'icon-nextcloud', authType: 'form', requires: ['URL сервера', 'Логин', 'Пароль'] },
-  { id: 'Google', name: 'Google Drive', icon: <HardDrive />, iconClass: 'icon-google', authType: 'oauth', requires: [] },
-  { id: 'WebDAV', name: 'WebDAV', icon: <Shield />, iconClass: 'icon-webdav', authType: 'form', requires: ['URL', 'Логин', 'Пароль'] },
+  { id: 'Yandex', name: 'Яндекс.Диск', icon: <Cloud size={16} />, authType: 'oauth', requires: [] },
+  { id: 'Nextcloud', name: 'Nextcloud', icon: <Server size={16} />, authType: 'form', requires: ['URL сервера', 'Логин', 'Пароль'] },
+  { id: 'Google', name: 'Google Drive', icon: <HardDrive size={16} />, authType: 'oauth', requires: [] },
+  { id: 'WebDAV', name: 'WebDAV', icon: <Shield size={16} />, authType: 'form', requires: ['URL', 'Логин', 'Пароль'] },
 ];
 
 export default function App() {
@@ -38,28 +37,24 @@ export default function App() {
   const [step, setStep] = useState<1 | 2>(1);
   const [selectedProvider, setSelectedProvider] = useState<CloudProvider | null>(null);
 
+  const [filterProvider, setFilterProvider] = useState<string>('All');
+  const [filterSize, setFilterSize] = useState<string>('All');
+
   useEffect(() => {
     let isMounted = true;
-
     if (step === 2 && selectedProvider?.authType === 'oauth') {
       openBrowserAuth(selectedProvider.id).then((success) => {
-        if (isMounted && success) {
-          handleMountSuccess(selectedProvider);
-        }
+        if (isMounted && success) handleMountSuccess(selectedProvider);
       });
     }
-
     return () => { isMounted = false; };
   }, [step, selectedProvider]);
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProvider) return;
-
-    const success = await mountDriveLogic(selectedProvider.id, { info: "data_from_inputs" });
-    if (success) {
-      handleMountSuccess(selectedProvider);
-    }
+    const success = await mountDriveLogic(selectedProvider.id, { info: "data" });
+    if (success) handleMountSuccess(selectedProvider);
   };
 
   const handleMountSuccess = (provider: CloudProvider) => {
@@ -71,188 +66,146 @@ export default function App() {
       usedSpace: Math.floor(Math.random() * 50),
       letter: `${String.fromCharCode(65 + Math.floor(Math.random() * 26))}:`
     };
-
     setDrives(prev => [...prev, newDrive]);
     closeModal();
   };
 
   const handleUnmount = async (id: string) => {
     const success = await unmountDriveLogic(id);
-    if (success) {
-      setDrives(drives.filter(d => d.id !== id));
-    }
+    if (success) setDrives(drives.filter(d => d.id !== id));
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setTimeout(() => {
-      setStep(1);
-      setSelectedProvider(null);
-    }, 300);
+    setStep(1);
+    setSelectedProvider(null);
   };
 
+  const handleAppClose = () => {
+    // Безопасный вызов метода Wails д��я закрытия приложения
+    if ((window as any).runtime && (window as any).runtime.Quit) {
+      (window as any).runtime.Quit();
+    } else {
+      console.log('Закрытие окна (Wails runtime не найден)');
+    }
+  };
+
+  const filteredDrives = drives.filter(drive => {
+    const matchProvider = filterProvider === 'All' || drive.provider === filterProvider;
+    let matchSize = true;
+    if (filterSize === 'small') matchSize = drive.totalSpace < 100;
+    if (filterSize === 'large') matchSize = drive.totalSpace >= 100;
+    return matchProvider && matchSize;
+  });
+
   return (
-    <div className="app-wrapper">
-      <motion.div
-        initial={{ opacity: 0, y: -30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="app-container"
-      >
-        <header className="header">
-          <motion.img 
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2, type: "spring" }}
-            src={logo} 
-            alt="logo" 
-            className="logo-img hover-neon hover-shadow"
-          />
-          <h1 className="animated-gradient-text">
-            CloudMounter
-          </h1>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setIsModalOpen(true)}
-            className="btn btn-primary hover-neon hover-shadow"
-          >
-            <Plus size={20} />
-            Добавить диск
-          </motion.button>
+    <div className="qt-window-bg">
+      {/* Жестко заданный контейнер 9:16 */}
+      <div className="qt-app-container">
+        
+        {/* === КАСТОМНЫЙ ТАЙТЛБАР ОКНА ДЛЯ WAILS === */}
+        <div className="qt-window-titlebar">
+          <div className="qt-window-title">КСП СТЫК</div>
+          <button onClick={handleAppClose} className="qt-window-close-btn" title="Закрыть">
+            <X size={14} />
+          </button>
+        </div>
+        
+        <header className="qt-header">
+          <div className="qt-header-left">
+            <img src={logo} alt="logo" className="qt-logo" />
+            <div className="qt-titles">
+              <span className="qt-subtitle">КСП</span>
+              <h1 className="qt-title">СТЫК</h1>
+            </div>
+          </div>
+          <button onClick={() => setIsModalOpen(true)} className="qt-btn qt-btn-icon" title="Добавить диск">
+            <Plus size={18} />
+          </button>
         </header>
 
-        <main style={{ width: '100%' }}>
-          <div className={`drives-zone hover-neon ${drives.length === 0 ? 'empty' : ''}`}>
-            {drives.length === 0 ? (
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="empty-state"
-              >
-                <Cloud size={64} style={{ opacity: 0.3, marginBottom: '1rem' }} />
-                <p>Нет подключенных дисков</p>
-              </motion.div>
-            ) : (
-              <motion.div layout className="drives-grid">
-                <AnimatePresence>
-                  {drives.map((drive) => (
-                    <DriveCard key={drive.id} drive={drive} onUnmount={handleUnmount} />
-                  ))}
-                </AnimatePresence>
-              </motion.div>
-            )}
-          </div>
+        <div className="qt-toolbar">
+          <span className="qt-toolbar-label"><Filter size={14} /></span>
+          <select className="qt-input qt-flex-1" value={filterProvider} onChange={(e) => setFilterProvider(e.target.value)}>
+            <option value="All">Все сервисы</option>
+            {PROVIDERS.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
+          <select className="qt-input qt-flex-1" value={filterSize} onChange={(e) => setFilterSize(e.target.value)}>
+            <option value="All">Любой размер</option>
+            <option value="small">Меньше 100 ГБ</option>
+            <option value="large">Больше или 100 ГБ</option>
+          </select>
+        </div>
+
+        <main className="qt-workspace">
+          {drives.length === 0 || filteredDrives.length === 0 ? (
+            <div className="qt-empty-state">
+              <Cloud size={48} />
+              <p>{drives.length === 0 ? 'Нет дисков' : 'Ничего не найдено'}</p>
+            </div>
+          ) : (
+            <div className="qt-drives-list">
+              {filteredDrives.map((drive) => (
+                <DriveCard key={drive.id} drive={drive} onUnmount={handleUnmount} />
+              ))}
+            </div>
+          )}
         </main>
-      </motion.div>
 
-      <AnimatePresence>
-        {isModalOpen && (
-          <div className="modal-overlay">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={closeModal}
-              className="modal-backdrop"
-              style={{ position: 'absolute', inset: 0 }}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.5, y: 50 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.5, y: 50 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="modal-content hover-neon"
-            >
-              <button onClick={closeModal} className="modal-close-btn hover-neon-red">
-                <X size={20} />
-              </button>
-
-              <div className="modal-header">
-                <h2>{step === 1 ? 'Выберите сервис' : `Подключение ${selectedProvider?.name}`}</h2>
-                <p>{step === 1 ? 'Какой тип диска вы хотите смонтировать?' : 'Авторизация'}</p>
-              </div>
-
-              {step === 1 ? (
-                <div className="provider-grid">
-                  {PROVIDERS.map((provider) => (
-                    <motion.button
-                      key={provider.id}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => {
-                        setSelectedProvider(provider);
-                        setStep(2);
-                      }}
-                      className="provider-btn hover-neon hover-shadow"
-                    >
-                      <div className={`card-icon ${provider.iconClass}`}>
-                        {provider.icon}
-                      </div>
-                      <span style={{ fontWeight: 600 }}>{provider.name}</span>
-                    </motion.button>
-                  ))}
+        <AnimatePresence>
+          {isModalOpen && (
+            <div className="qt-dialog-overlay">
+              <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                exit={{ opacity: 0 }} 
+                transition={{ duration: 0.1 }}
+                className="qt-dialog"
+              >
+                <div className="qt-dialog-titlebar">
+                  <span>{step === 1 ? 'Монтирование' : selectedProvider?.name}</span>
+                  <button onClick={closeModal} className="qt-dialog-close"><X size={14} /></button>
                 </div>
-              ) : selectedProvider?.authType === 'oauth' ? (
-                <motion.div 
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                  className="oauth-loading-container"
-                >
-                  <Loader2 size={56} className="icon-spin icon-yandex" style={{ marginBottom: '1.5rem' }} />
-                  <h3 style={{ margin: '0 0 0.5rem 0' }}>Ожидание авторизации...</h3>
-                  <p className="form-label" style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                    Подождите, сейчас откроется браузер для подключения {selectedProvider.name}
-                  </p>
-                  <motion.button
-                    type="button"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setStep(1)}
-                    className="btn btn-secondary hover-neon hover-shadow"
-                    style={{ width: '100%' }}
-                  >
-                    Отмена
-                  </motion.button>
-                </motion.div>
-              ) : (
-                <form onSubmit={handleFormSubmit}>
-                  {selectedProvider?.requires.map((req, idx) => (
-                    <div key={idx} className="form-group">
-                      <label className="form-label">{req}</label>
-                      <div className="input-wrapper hover-neon" style={{ borderRadius: '4px' }}>
-                        <input
-                          type={req.toLowerCase().includes('пароль') ? 'password' : 'text'}
-                          required
-                          className="form-input"
-                        />
+
+                <div className="qt-dialog-content">
+                  {step === 1 ? (
+                    <>
+                      <p className="qt-label">Файловая система:</p>
+                      <div className="qt-provider-list">
+                        {PROVIDERS.map((provider) => (
+                          <button key={provider.id} onClick={() => { setSelectedProvider(provider); setStep(2); }} className="qt-list-item">
+                            {provider.icon}
+                            <span>{provider.name}</span>
+                          </button>
+                        ))}
                       </div>
+                    </>
+                  ) : selectedProvider?.authType === 'oauth' ? (
+                    <div className="qt-oauth-wait">
+                      <Loader2 size={32} className="qt-spinner" />
+                      <p>Ожидание...</p>
+                      <span className="qt-muted-text">Подтвердите в браузере</span>
                     </div>
-                  ))}
-                  <div className="form-actions">
-                    <motion.button
-                      type="button"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => setStep(1)}
-                      className="btn btn-secondary hover-neon hover-shadow"
-                    >
-                      Назад
-                    </motion.button>
-                    <motion.button
-                      type="submit"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.9 }}
-                      className="btn btn-submit hover-neon hover-shadow"
-                    >
-                      Смонтировать
-                    </motion.button>
-                  </div>
-                </form>
-              )}
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+                  ) : (
+                    <form onSubmit={handleFormSubmit} className="qt-form">
+                      {selectedProvider?.requires.map((req, idx) => (
+                        <div key={idx} className="qt-form-group">
+                          <label>{req}:</label>
+                          <input type={req.toLowerCase().includes('пароль') ? 'password' : 'text'} required className="qt-input" />
+                        </div>
+                      ))}
+                      <div className="qt-dialog-actions" style={{ marginTop: '16px' }}>
+                        <button type="button" onClick={() => setStep(1)} className="qt-btn">Назад</button>
+                        <button type="submit" className="qt-btn qt-btn-primary">Применить</button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
@@ -262,49 +215,28 @@ function DriveCard({ drive, onUnmount }: { drive: MountedDrive, onUnmount: (id: 
   const percentage = Math.round((drive.usedSpace / drive.totalSpace) * 100);
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.8 }}
-      className="drive-card hover-neon hover-shadow"
-    >
-      <div className="card-header">
-        <div className="card-title-group">
-          <div className={`card-icon ${providerConfig?.iconClass}`}>
-            {providerConfig?.icon}
-          </div>
-          <div>
-            <h3 className="card-title">{drive.name}</h3>
-            <p className="card-subtitle">Диск {drive.letter}</p>
-          </div>
+    <div className="qt-card">
+      <div className="qt-card-header">
+        <div className="qt-card-icon">{providerConfig?.icon}</div>
+        <div className="qt-card-details">
+          <span className="qt-card-title">{drive.name}</span>
+          <span className="qt-card-point">Точка: {drive.letter}</span>
         </div>
       </div>
-
-      <div>
-        <div className="progress-info">
-          <span>{drive.usedSpace} ГБ занято</span>
-          <span>{drive.totalSpace} ГБ</span>
+      <div className="qt-card-body">
+        <div className="qt-progress-labels">
+          <span>{drive.usedSpace} GiB</span>
+          <span>{drive.totalSpace} GiB</span>
         </div>
-        <div className="progress-bar-bg">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${percentage}%` }}
-            transition={{ duration: 1 }}
-            className="progress-bar-fill"
-          />
+        <div className="qt-progress-bar">
+          <div className="qt-progress-fill" style={{ width: `${percentage}%` }}></div>
         </div>
       </div>
-
-      <motion.button 
-        whileHover={{ scale: 1.03 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() => onUnmount(drive.id)}
-        className="btn btn-danger hover-neon-red hover-shadow"
-      >
-        <Trash2 size={18} />
-        Отключить
-      </motion.button>
-    </motion.div>
+      <div className="qt-card-footer">
+        <button onClick={() => onUnmount(drive.id)} className="qt-btn qt-btn-danger qt-btn-full">
+          <Trash2 size={12} /> Отмонтировать
+        </button>
+      </div>
+    </div>
   );
 }

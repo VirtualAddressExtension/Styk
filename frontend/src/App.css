@@ -1,403 +1,449 @@
+/* ========================================================== */
+/* BREEZE DARK QT THEME & 9:16 LOCKED LAYOUT                  */
+/* ========================================================== */
+
 body {
     margin: 0;
     padding: 0;
-    background-color: rgba(255, 255, 255, 1);
-    font-family: 'Roboto', 'Segoe UI', sans-serif;
-    color: #333;
-}
-
-.app-wrapper {
+    font-family: "Noto Sans", "Ubuntu", "Segoe UI", sans-serif;
+    background-color: #121212; /* Черный фон вокруг приложения (для веба) */
+    color: #eff0f1; /* Светлый текст KDE Breeze Dark */
+    font-size: 13px;
     display: flex;
     justify-content: center;
-    width: 100%;
-    min-height: 100vh;
-    background-color: rgba(255, 255, 255, 1);
+    align-items: center;
+    height: 100vh;
+    overflow: hidden; /* Запрещаем скролл страницы */
 }
 
-.app-container {
-    width: 100%;
-    max-width: 900px;
+/* ========================================================== */
+/* ЖЕСТКИЙ КОНТЕЙНЕР 9:16                                     */
+/* ========================================================== */
+.qt-app-container {
+    width: 405px;
+    height: 720px;
+    background: #232629; /* Темно-серый фон окна Qt */
+    border: 1px solid #4d5057; /* Системный бордер */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     display: flex;
     flex-direction: column;
-    align-items: center;
-    padding: 2rem;
-}
-
-.header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 2.5rem;
-}
-
-.logo-img {
-    width: 120px;
-    height: 120px;
-    object-fit: contain;
-    border-radius: 20px;
-}
-
-.animated-gradient-text {
-    font-size: 2.5rem;
-    font-weight: 800;
-    margin: 1rem 0 2rem 0;
-    background: linear-gradient(90deg, #FFD700, #FF8C00, #FFD700, #FF8C00);
-    background-size: 200% auto;
-    color: transparent;
-    -webkit-background-clip: text;
-    background-clip: text;
-    animation: gradient-shift 3s linear infinite;
-}
-
-@keyframes gradient-shift {
-    to { background-position: 200% center; }
-}
-
-.drives-zone {
-    border: 2px solid #E0E0E0;
-    border-radius: 16px;
-    padding: 2rem;
-    min-height: 250px;
-    background: #FFFFFF;
-    width: 100%;
-    box-sizing: border-box;
-    transition: all 0.3s ease;
-}
-
-.drives-zone.empty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.btn {
     position: relative;
     overflow: hidden;
-    border: none;
-    border-radius: 4px;
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    font-weight: 600;
+}
+
+/* ========================================================== */
+/* ШАПКА                                                      */
+/* ========================================================== */
+.qt-header {
+    background: #31363b; /* Чуть светлее фона окна */
+    border-bottom: 1px solid #4d5057;
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.qt-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.qt-logo {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #4d5057;
+    background: #232629;
+    padding: 2px;
+    border-radius: 2px;
+}
+
+.qt-titles {
+    display: flex;
+    flex-direction: column;
+}
+
+.qt-subtitle {
+    font-size: 9px;
+    color: #a5a9ad;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.qt-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #eff0f1;
+    letter-spacing: 1px;
+}
+
+/* ========================================================== */
+/* ТУЛБАР И ФИЛЬТРЫ                                           */
+/* ========================================================== */
+.qt-toolbar {
+    background: #2a2e32;
+    padding: 8px 14px;
+    border-bottom: 1px solid #4d5057;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.qt-toolbar-label {
+    display: flex;
+    align-items: center;
+    color: #a5a9ad;
+}
+
+.qt-flex-1 {
+    flex: 1;
+    min-width: 0; /* Чтобы select не распирал флекс */
+}
+
+/* ========================================================== */
+/* РАБОЧАЯ ОБЛАСТЬ (Список в 1 колонку для 9:16)              */
+/* ========================================================== */
+.qt-workspace {
+    background: #1b1e20; /* Цвет рабочей области (виджета списка) */
+    padding: 14px;
+    flex-grow: 1;
+    overflow-y: auto; /* Внутренний скролл для дисков */
+}
+
+/* Стилизация скроллбара под Qt */
+.qt-workspace::-webkit-scrollbar {
+    width: 8px;
+}
+.qt-workspace::-webkit-scrollbar-track {
+    background: #232629;
+    border-left: 1px solid #4d5057;
+}
+.qt-workspace::-webkit-scrollbar-thumb {
+    background: #4d5057;
+}
+.qt-workspace::-webkit-scrollbar-thumb:hover {
+    background: #3daee9;
+}
+
+.qt-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #76797c;
+}
+
+.qt-drives-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ========================================================== */
+/* КАРТОЧКА ДИСКА                                             */
+/* ========================================================== */
+.qt-card {
+    background: #232629;
+    border: 1px solid #4d5057;
+    border-radius: 2px;
+    display: flex;
+    flex-direction: column;
+}
+
+.qt-card:hover {
+    border-color: #3daee9; /* Акцент KDE */
+}
+
+.qt-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-bottom: 1px solid #31363b;
+}
+
+.qt-card-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #eff0f1;
+}
+
+.qt-card-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.qt-card-title {
+    font-weight: 600;
+    font-size: 13px;
+    color: #eff0f1;
+}
+
+.qt-card-point {
+    font-size: 11px;
+    color: #a5a9ad;
+}
+
+.qt-card-body {
+    padding: 10px;
+}
+
+.qt-progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    margin-bottom: 4px;
+    color: #eff0f1;
+}
+
+/* Системный прогресс-бар */
+.qt-progress-bar {
+    height: 12px;
+    background: #1b1e20;
+    border: 1px solid #4d5057;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.qt-progress-fill {
+    height: 100%;
+    background: #3daee9; /* Классический синий бар */
+}
+
+.qt-card-footer {
+    padding: 0 10px 10px;
+}
+
+/* ========================================================== */
+/* UI ЭЛЕМЕНТЫ (Кнопки, Инпуты)                               */
+/* ========================================================== */
+.qt-btn {
+    background-color: #31363b;
+    border: 1px solid #4d5057;
+    border-radius: 2px;
+    color: #eff0f1;
+    padding: 6px 12px;
+    font-size: 12px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-    transition: background-color 0.3s ease, color 0.3s ease;
+    gap: 6px;
+    transition: background 0.1s;
 }
 
-.btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 50%;
-    height: 100%;
-    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
-    transform: skewX(-20deg);
-    transition: left 0.5s ease-out;
-    z-index: 5;
-    pointer-events: none;
+.qt-btn-icon {
+    padding: 6px;
 }
 
-.btn:hover::before {
-    left: 150%;
-}
-
-.btn-primary, .btn-submit {
-    background-color: #FF8C00;
-    color: white;
-}
-
-.btn-danger {
-    background-color: #F44336;
-    color: white;
+.qt-btn-full {
     width: 100%;
 }
 
-.btn-secondary {
-    background-color: #E0E0E0;
-    color: #333;
-    flex: 1;
+.qt-btn:hover {
+    background-color: #3daee9;
+    border-color: #3daee9;
+    color: #ffffff;
+}
+.qt-btn:active {
+    background-color: #2b79a3;
 }
 
-.btn-submit {
-    flex: 1;
+.qt-btn-primary {
+    background-color: #3daee9;
+    color: #ffffff;
+    border-color: #3daee9;
+}
+.qt-btn-primary:hover {
+    background-color: #49b5eb;
 }
 
-.empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    color: #999;
+.qt-btn-danger:hover {
+    background-color: #da4453;
+    color: #ffffff;
+    border-color: #da4453;
 }
 
-.drives-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
-    width: 100%;
+.qt-input {
+    border: 1px solid #4d5057;
+    border-radius: 2px;
+    padding: 5px 8px;
+    font-size: 12px;
+    background: #1b1e20;
+    color: #eff0f1;
+    outline: none;
 }
 
-.drive-card {
-    background: #FFFFFF;
-    border-radius: 8px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    border: 1px solid #EEEEEE;
+.qt-input:focus {
+    border-color: #3daee9;
 }
 
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-
-.card-title-group {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.card-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #F5F5F5;
-}
-
-.card-title {
-    margin: 0;
-    font-size: 1.1rem;
-    color: #333333;
-}
-
-.card-subtitle {
-    margin: 0;
-    font-size: 0.8rem;
-    color: #666666;
-}
-
-.progress-info {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.8rem;
-    color: #666666;
-    margin-bottom: 0.25rem;
-}
-
-.progress-bar-bg {
-    height: 6px;
-    background-color: #EEEEEE;
-    border-radius: 3px;
-    overflow: hidden;
-}
-
-.progress-bar-fill {
-    height: 100%;
-    background-color: #FF8C00;
-}
-
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.6);
+/* ========================================================== */
+/* МОДАЛЬНОЕ ОКНО (Абсолютное позиционирование внутри окна)   */
+/* ========================================================== */
+.qt-dialog-overlay {
+    position: absolute; /* Теперь только внутри qt-app-container */
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6); 
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 100;
 }
 
-.modal-content {
-    background: #FFFFFF;
-    border-radius: 8px;
-    padding: 2rem;
-    width: 100%;
-    max-width: 400px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    position: relative;
-    z-index: 101;
+.qt-dialog {
+    background: #232629;
+    border: 1px solid #4d5057;
+    border-radius: 2px;
+    width: 90%;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
 }
 
-.modal-close-btn {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
+.qt-dialog-titlebar {
+    background: #31363b;
+    border-bottom: 1px solid #4d5057;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    font-size: 12px;
+    color: #eff0f1;
+}
+
+.qt-dialog-close {
     background: none;
     border: none;
     cursor: pointer;
-    color: #999999;
-    padding: 0;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.3s;
+    color: #a5a9ad;
+    padding: 2px;
+}
+.qt-dialog-close:hover { color: #da4453; }
+
+.qt-dialog-content {
+    padding: 14px;
 }
 
-.modal-close-btn:hover {
-    color: #F44336;
+.qt-label {
+    margin: 0 0 10px 0;
+    color: #eff0f1;
 }
 
-.modal-header {
-    text-align: center;
-    margin-bottom: 1.5rem;
-}
-
-.modal-header h2 {
-    margin: 0;
-    font-size: 1.5rem;
-}
-
-.modal-header p {
-    margin: 0.5rem 0 0;
-    color: #666666;
-    font-size: 0.9rem;
-}
-
-.provider-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-}
-
-.provider-btn {
+.qt-provider-list {
     display: flex;
     flex-direction: column;
+    gap: 4px;
+    background: #1b1e20;
+    border: 1px solid #4d5057;
+    padding: 4px;
+}
+
+.qt-list-item {
+    display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 1.5rem;
-    background: #FFFFFF;
-    border: 1px solid #EEEEEE;
-    border-radius: 8px;
+    gap: 10px;
+    padding: 8px 10px;
+    background: transparent;
+    border: none;
     cursor: pointer;
+    text-align: left;
+    color: #eff0f1;
+}
+.qt-list-item:hover {
+    background: #3daee9;
+    color: #fff;
 }
 
-.form-group {
-    margin-bottom: 1rem;
-}
-
-.form-label {
-    display: block;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #666666;
-    margin-bottom: 0.25rem;
-    text-transform: uppercase;
-}
-
-.input-wrapper {
-    width: 100%;
-    position: relative;
-}
-
-.form-input {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 0.75rem;
-    border: 1px solid #CCCCCC;
-    border-radius: 4px;
-    font-size: 1rem;
-    outline: none;
-    background-color: transparent;
-}
-
-.form-actions {
+.qt-form-group {
     display: flex;
-    gap: 1rem;
-    margin-top: 1.5rem;
+    flex-direction: column;
+    margin-bottom: 12px;
 }
 
-.icon-yandex { color: #FF9800; }
-.icon-nextcloud { color: #2196F3; }
-.icon-google { color: #4CAF50; }
-.icon-webdav { color: #9C27B0; }
-
-.hover-neon, .hover-neon-red {
-    position: relative;
-    z-index: 1;
+.qt-form-group label {
+    font-size: 11px;
+    margin-bottom: 4px;
+    color: #a5a9ad;
 }
 
-.hover-neon::after, .hover-neon-red::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 3px;
-    background-size: 300% 100%;
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: 10;
+.qt-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
 }
 
-.hover-neon:hover::after, .input-wrapper.hover-neon:focus-within::after {
-    opacity: 1;
-    background-image: linear-gradient(90deg, #FFD700, #FF8C00, #FFD700, #FF8C00);
-    animation: move-neon 0.6s linear infinite;
-}
-
-.hover-neon:hover, .input-wrapper.hover-neon:focus-within {
-    box-shadow: 0 0 12px rgba(255, 140, 0, 0.4);
-}
-
-.hover-neon-red:hover::after {
-    opacity: 1;
-    background-image: linear-gradient(90deg, #ff4d4d, #990000, #ff4d4d, #990000);
-    animation: move-neon 0.6s linear infinite;
-}
-
-.hover-neon-red:hover {
-    box-shadow: 0 0 12px rgba(204, 0, 0, 0.4);
-}
-
-@keyframes move-neon {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 100% 50%; }
-}
-
-.hover-shadow {
-    transition: transform 0.2s ease, box-shadow 0.3s ease;
-}
-
-.hover-neon.hover-shadow:hover {
-    box-shadow: 0 10px 25px rgba(255, 140, 0, 0.3);
-}
-
-.hover-neon-red.hover-shadow:hover {
-    box-shadow: 0 10px 25px rgba(204, 0, 0, 0.3);
-}
-
-.oauth-loading-container {
+.qt-oauth-wait {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 1rem 0;
+    text-align: center;
+    padding: 20px 0;
 }
 
-.icon-spin {
-    animation: spin 2s linear infinite;
+.qt-spinner {
+    animation: spin 1s linear infinite;
+    color: #3daee9;
+    margin-bottom: 10px;
+}
+
+.qt-muted-text {
+    font-size: 11px;
+    color: #76797c;
+    margin-top: 5px;
 }
 
 @keyframes spin {
-    from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
+}
+
+/* ========================================================== */
+/* КАСТОМНЫЙ ТАЙТЛБАР (WAILS WINDOW CONTROLS)                 */
+/* ========================================================== */
+.qt-window-titlebar {
+    height: 24px;
+    background: #232629; 
+    border-bottom: 1px solid #31363b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    /* Делаем область перетаскиваемой (специфично для Wails/Electron) */
+    --wails-draggable: drag;
+    -webkit-app-region: drag;
+    user-select: none;
+}
+
+.qt-window-title {
+    font-size: 10px;
+    color: #76797c;
+    padding-left: 10px;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.qt-window-close-btn {
+    height: 24px;
+    width: 36px;
+    background: transparent;
+    border: none;
+    color: #da4453; /* Красный крестик */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    
+    /* Отключаем перетаскивание на самой кнопке, иначе она не нажмется */
+    --wails-draggable: no-drag;
+    -webkit-app-region: no-drag;
+}
+
+.qt-window-close-btn:hover {
+    background-color: #da4453; /* При наведении заливаем красным */
+    color: #ffffff; /* А крестик становится белым */
 }
