@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cloud, HardDrive, Plus, X, Trash2, Server, Shield, Loader2 } from 'lucide-react';
 import logo from './assets/images/logo-universal.png';
-import { ProviderType, openBrowserAuth, mountDriveLogic, unmountDriveLogic } from './logic';
+import { ProviderType, openBrowserAuth, mountDriveLogic, unmountDriveLogic } from './logic.js';
 import './App.css';
 
 interface CloudProvider {
@@ -111,14 +111,6 @@ export default function App() {
           <h1 className="animated-gradient-text">
             CloudMounter
           </h1>
-          
-          /*
-           * Button for added new 
-           * cloud disk to user storage
-           *
-           * Usage only on fronted for
-           * great UX 
-           */
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.9 }}
@@ -255,10 +247,6 @@ export default function App() {
                       Смонтировать
                     </motion.button>
                   </div>
-                    </div>
-                    
-                  ))}
-                  
                 </form>
               )}
             </motion.div>
@@ -308,10 +296,6 @@ function DriveCard({ drive, onUnmount }: { drive: MountedDrive, onUnmount: (id: 
         </div>
       </div>
 
-      /**
-       * Button for close connection
-       * to cloud disk
-       */
       <motion.button 
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.9 }}
@@ -323,31 +307,4 @@ function DriveCard({ drive, onUnmount }: { drive: MountedDrive, onUnmount: (id: 
       </motion.button>
     </motion.div>
   );
-}
-
-/**
- *! Utils functions
- */
-function isEmpty(str:string):boolean{
-    
-}
-
-
-/**
- ** Function handlers for buttons
- */
-
-const createMount = (id : number, token:string|null, login:string|null, password:string|null, url:URL|null) => {
-    const current_service = PROVIDERS[id]
-
-    if ((current_service.requires.length === 1 && (token === null || token.length <= 0) ) || current_service.requires.length === 3 && (login))
-    {
-        //TODO: add modal window for render err message
-        return (<div>некорректно введены данные</div>)
-    }
-    else if (current_service.requires.length === 1 && (token === null || token.length <= 0) )
-    {
-            //TODO: add modal window for render err message
-            return (<div>некорректно введены данные</div>)
-    }
 }
