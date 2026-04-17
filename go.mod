@@ -110,5 +110,3 @@ require (
 	google.golang.org/protobuf v1.36.10 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 )
-
-// replace github.com/wailsapp/wails/v2 v2.12.0 => C:\Users\VAX\go\pkg\mod

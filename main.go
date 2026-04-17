@@ -3,6 +3,8 @@ package main
 import (
 	"embed"
 
+	"runtime"
+
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -13,28 +15,45 @@ import (
 //go:embed all:frontend/dist
 var assets embed.FS
 
-func onReady() {
-	/*icon, err := assets.Open("icon.ico")
-	if err != nil {
-		println("Error:", err.Error())
-	}*/
+//go:embed build/appicon.png
+var icon []byte
 
-	// systray.SetIcon(icon.Data)
-	systray.SetTitle("Awesome App")
-	systray.SetTooltip("Pretty awesome!")
-	mQuit := systray.AddMenuItem("Quit", "Quit the whole app")
-	mQuit.Enable()
-	// mQuit.SetIcon(icon.Data)
-}
-
-func onExit() {
-	// Очистка здесь
-}
+//go:embed build/windows/icon.ico
+var icon_windows []byte
 
 func main() {
-	systray.Run(onReady, onExit)
-
 	app := NewApp()
+
+	systray.Register(func() {
+		var ico []byte
+		if platform := runtime.GOOS; platform == "windows" {
+			ico = icon_windows
+		} else {
+			ico = icon
+		}
+
+		systray.SetIcon(ico)
+		systray.SetTitle("КСП СТЫК")
+		mShow := systray.AddMenuItem("Показать/Скрыть", "Показать или скрыть приложение")
+		mQuit := systray.AddMenuItem("Выход", "Выйти из приложения")
+
+		go func() {
+			for {
+				select {
+				case <-mShow.ClickedCh:
+					if app.IsAppHidden() {
+						app.ShowApp()
+					} else {
+						app.HideApp()
+					}
+
+				case <-mQuit.ClickedCh:
+					systray.Quit()
+					app.CloseApp()
+				}
+			}
+		}()
+	}, func() {})
 
 	err := wails.Run(&options.App{
 		Title:  "КСП «СТЫК»",

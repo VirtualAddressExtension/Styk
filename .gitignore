@@ -30,6 +30,7 @@ go.work.sum
 
 build/bin
 node_modules
+frontend/package-lock.json
 frontend/dist
 
 *.md5
