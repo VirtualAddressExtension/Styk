@@ -57,6 +57,10 @@ export default function App() {
 
   const handleUnmount = (id: string) => {
     setDrives(drives.filter(d => d.id !== id));
+
+    //TODO: handle this func with backend function close connection with cloud disks
+
+
   };
 
   const closeModal = () => {
@@ -87,6 +91,14 @@ export default function App() {
           <h1 className="animated-gradient-text">
             CloudMounter
           </h1>
+          
+          /*
+           * Button for added new 
+           * cloud disk to user storage
+           *
+           * Usage only on fronted for
+           * great UX 
+           */
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.9 }}
@@ -177,9 +189,7 @@ export default function App() {
                         required
                         className="form-input"
                       />
-                    </div>
-                  ))}
-                  <div className="form-actions">
+                      <div className="form-actions">
                     <motion.button
                       type="button"
                       whileHover={{ scale: 1.05 }}
@@ -194,10 +204,15 @@ export default function App() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.9 }}
                       className="btn btn-submit"
+                      onClick={createMount(idx)}
                     >
                       Смонтировать
                     </motion.button>
                   </div>
+                    </div>
+                    
+                  ))}
+                  
                 </form>
               )}
             </motion.div>
@@ -247,6 +262,10 @@ function DriveCard({ drive, onUnmount }: { drive: MountedDrive, onUnmount: (id: 
         </div>
       </div>
 
+      /**
+       * Button for close connection
+       * to cloud disk
+       */
       <motion.button 
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.9 }}
@@ -258,4 +277,31 @@ function DriveCard({ drive, onUnmount }: { drive: MountedDrive, onUnmount: (id: 
       </motion.button>
     </motion.div>
   );
+}
+
+/**
+ *! Utils functions
+ */
+function isEmpty(str:string):boolean{
+    
+}
+
+
+/**
+ ** Function handlers for buttons
+ */
+
+const createMount = (id : number, token:string|null, login:string|null, password:string|null, url:URL|null) => {
+    const current_service = PROVIDERS[id]
+
+    if ((current_service.requires.length === 1 && (token === null || token.length <= 0) ) || current_service.requires.length === 3 && (login))
+    {
+        //TODO: add modal window for render err message
+        return (<div>некорректно введены данные</div>)
+    }
+    else if (current_service.requires.length === 1 && (token === null || token.length <= 0) )
+    {
+            //TODO: add modal window for render err message
+            return (<div>некорректно введены данные</div>)
+    }
 }
