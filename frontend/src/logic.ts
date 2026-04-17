@@ -2,7 +2,7 @@
  * Origin file with logic for buttons in frontend
  */
 
-import logger from "./logger.js";
+//TODO: create a logger for logging in *.log file
 
 /**
  * Main cloud disk providers
@@ -13,16 +13,15 @@ export type ProviderType = 'Yandex' | 'Nextcloud' | 'Google' | 'WebDAV';
 
 
 export const openBrowserAuth = async (provider: ProviderType): Promise<boolean> => {
-  logger.info(`[System Logic] Открытие браузера для авторизации в: ${provider}...`);
+  console.log(`[System Logic] Открытие браузера для авторизации в: ${provider}...`);
   
-
   return new Promise((resolve) => {
 
     /**
      * TODO: switch test function normal backend func
      */
     setTimeout(() => {
-      logger.info(`[System Logic] Успешная авторизация в ${provider}!`);
+      console.log(`[System Logic] Успешная авторизация в ${provider}!`);
       resolve(true);
     }, 3000);
 
@@ -31,7 +30,7 @@ export const openBrowserAuth = async (provider: ProviderType): Promise<boolean> 
 };
 
 export const mountDriveLogic = async (provider: ProviderType, formData: Record<string, string>): Promise<boolean> => {
-  logger.info(`[System Logic] Вызов команды монтирования для ${provider} с данными:`, formData);
+  console.log(`[System Logic] Вызов команды монтирования для ${provider} с данными:`, formData);
   
   return new Promise((resolve) => {
     
@@ -39,14 +38,14 @@ export const mountDriveLogic = async (provider: ProviderType, formData: Record<s
      * TODO: switch test function normal backend func
      */
     setTimeout(() => {
-      logger.info(`[System Logic] Диск ${provider} успешно смонтирован!`);
+      console.log(`[System Logic] Диск ${provider} успешно смонтирован!`);
       resolve(true);
     }, 1000);
   });
 };
 
 export const unmountDriveLogic = async (driveId: string): Promise<boolean> => {
-  logger.info(`[System Logic] Размонтирование системного диска с ID: ${driveId}...`);
+  console.log(`[System Logic] Размонтирование системного диска с ID: ${driveId}...`);
   
   return new Promise((resolve) => {
 
@@ -55,7 +54,7 @@ export const unmountDriveLogic = async (driveId: string): Promise<boolean> => {
      * TODO: switch test function normal backend func
      */
     setTimeout(() => {
-      logger.info(`[System Logic] Диск ${driveId} отключен!`);
+      console.log(`[System Logic] Диск ${driveId} отключен!`);
       resolve(true);
     }, 500);
   });
