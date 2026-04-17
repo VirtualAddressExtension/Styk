@@ -11,6 +11,7 @@ body {
     justify-content: center;
     width: 100%;
     min-height: 100vh;
+    background-color: rgba(255, 255, 255, 1);
 }
 
 .app-container {
@@ -26,20 +27,21 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 3rem;
+    margin-bottom: 2.5rem;
 }
 
 .logo-img {
     width: 120px;
     height: 120px;
     object-fit: contain;
+    border-radius: 20px;
 }
 
 .animated-gradient-text {
     font-size: 2.5rem;
     font-weight: 800;
     margin: 1rem 0 2rem 0;
-    background: linear-gradient(90deg, #FFD700, #FF8C00, #FFD700);
+    background: linear-gradient(90deg, #FFD700, #FF8C00, #FFD700, #FF8C00);
     background-size: 200% auto;
     color: transparent;
     -webkit-background-clip: text;
@@ -49,6 +51,23 @@ body {
 
 @keyframes gradient-shift {
     to { background-position: 200% center; }
+}
+
+.drives-zone {
+    border: 2px solid #E0E0E0;
+    border-radius: 16px;
+    padding: 2rem;
+    min-height: 250px;
+    background: #FFFFFF;
+    width: 100%;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+.drives-zone.empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn {
@@ -66,14 +85,10 @@ body {
     justify-content: center;
     gap: 0.5rem;
     box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-    transition: box-shadow 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.btn:hover {
-    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
-}
-
-.btn::after {
+.btn::before {
     content: '';
     position: absolute;
     top: 0;
@@ -83,13 +98,15 @@ body {
     background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
     transform: skewX(-20deg);
     transition: left 0.5s ease-out;
+    z-index: 5;
+    pointer-events: none;
 }
 
-.btn:hover::after {
+.btn:hover::before {
     left: 150%;
 }
 
-.btn-primary {
+.btn-primary, .btn-submit {
     background-color: #FF8C00;
     color: white;
 }
@@ -107,8 +124,6 @@ body {
 }
 
 .btn-submit {
-    background-color: #FF8C00;
-    color: white;
     flex: 1;
 }
 
@@ -117,7 +132,6 @@ body {
     flex-direction: column;
     align-items: center;
     color: #999;
-    margin-top: 2rem;
 }
 
 .drives-grid {
@@ -129,7 +143,7 @@ body {
 
 .drive-card {
     background: #FFFFFF;
-    border-radius: 4px;
+    border-radius: 8px;
     padding: 1.5rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     display: flex;
@@ -207,7 +221,7 @@ body {
 
 .modal-content {
     background: #FFFFFF;
-    border-radius: 4px;
+    border-radius: 8px;
     padding: 2rem;
     width: 100%;
     max-width: 400px;
@@ -225,10 +239,17 @@ body {
     cursor: pointer;
     color: #999999;
     padding: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s;
 }
 
 .modal-close-btn:hover {
-    color: #333333;
+    color: #F44336;
 }
 
 .modal-header {
@@ -262,10 +283,8 @@ body {
     padding: 1.5rem;
     background: #FFFFFF;
     border: 1px solid #EEEEEE;
-    border-radius: 4px;
+    border-radius: 8px;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    border: none;
 }
 
 .form-group {
@@ -281,6 +300,11 @@ body {
     text-transform: uppercase;
 }
 
+.input-wrapper {
+    width: 100%;
+    position: relative;
+}
+
 .form-input {
     width: 100%;
     box-sizing: border-box;
@@ -289,11 +313,7 @@ body {
     border-radius: 4px;
     font-size: 1rem;
     outline: none;
-    transition: border-color 0.2s;
-}
-
-.form-input:focus {
-    border-color: #FF8C00;
+    background-color: transparent;
 }
 
 .form-actions {
@@ -306,3 +326,78 @@ body {
 .icon-nextcloud { color: #2196F3; }
 .icon-google { color: #4CAF50; }
 .icon-webdav { color: #9C27B0; }
+
+.hover-neon, .hover-neon-red {
+    position: relative;
+    z-index: 1;
+}
+
+.hover-neon::after, .hover-neon-red::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 3px;
+    background-size: 300% 100%;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+}
+
+.hover-neon:hover::after, .input-wrapper.hover-neon:focus-within::after {
+    opacity: 1;
+    background-image: linear-gradient(90deg, #FFD700, #FF8C00, #FFD700, #FF8C00);
+    animation: move-neon 0.6s linear infinite;
+}
+
+.hover-neon:hover, .input-wrapper.hover-neon:focus-within {
+    box-shadow: 0 0 12px rgba(255, 140, 0, 0.4);
+}
+
+.hover-neon-red:hover::after {
+    opacity: 1;
+    background-image: linear-gradient(90deg, #ff4d4d, #990000, #ff4d4d, #990000);
+    animation: move-neon 0.6s linear infinite;
+}
+
+.hover-neon-red:hover {
+    box-shadow: 0 0 12px rgba(204, 0, 0, 0.4);
+}
+
+@keyframes move-neon {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+
+.hover-shadow {
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.hover-neon.hover-shadow:hover {
+    box-shadow: 0 10px 25px rgba(255, 140, 0, 0.3);
+}
+
+.hover-neon-red.hover-shadow:hover {
+    box-shadow: 0 10px 25px rgba(204, 0, 0, 0.3);
+}
+
+.oauth-loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 0;
+}
+
+.icon-spin {
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
