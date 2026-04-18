@@ -18,7 +18,7 @@ interface MountedDrive {
     name: string;
     provider: ProviderType;
     totalSpace: number;
-    usedSpace: number;
+    usedSpace: number;  
     letter: string;
 }
 
@@ -85,7 +85,7 @@ export default function App() {
     let isMounted = true;
     if (step === 2 && selectedProvider?.authType === 'oauth') {
       openBrowserAuth(selectedProvider.id).then((success) => {
-        if (isMounted && success) handleMountSuccess(selectedProvider);
+        if (isMounted && success) console.log(1);
       }).catch(e=>{isMounted == false});
     }
     return () => { isMounted = false; };
