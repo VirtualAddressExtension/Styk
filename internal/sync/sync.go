@@ -28,12 +28,12 @@ func NewSyncEngine(fLocal, fRemote fs.Fs, localPath string, workDir string) *Syn
 		fLocal:    fLocal,
 		fRemote:   fRemote,
 		localPath: localPath,
-		interval:  1 * time.Minute, // Интервал опроса облака
+		interval:  1 * time.Minute, // Плановый опрос облака
 		trigger:   make(chan struct{}, 1),
 		bisyncOpt: &bisync.Options{
 			Workdir:   workDir,
 			CheckSync: bisync.CheckSyncTrue,
-			Resync:    true,
+			Resync:    true, // Обязательно true для создания базового слепка
 		},
 	}
 }
@@ -45,6 +45,7 @@ func (e *SyncEngine) Start(ctx context.Context) {
 		ticker := time.NewTicker(e.interval)
 		defer ticker.Stop()
 
+		// Первый запуск при старте
 		e.runSync(ctx)
 
 		for {
@@ -53,7 +54,7 @@ func (e *SyncEngine) Start(ctx context.Context) {
 				log.Println("[Engine] Плановый опрос облака...")
 				e.runSync(ctx)
 			case <-e.trigger:
-				log.Println("[Engine] Срочная синхронизация по событию...")
+				log.Println("[Engine] Срочная синхронизация по локальному событию...")
 				e.runSync(ctx)
 			case <-ctx.Done():
 				return
@@ -74,15 +75,22 @@ func (e *SyncEngine) runSync(ctx context.Context) {
 	defer func() {
 		e.mu.Lock()
 		e.isRunning = false
-		e.bisyncOpt.Resync = false
 		e.mu.Unlock()
 	}()
 
-	err := bisync.Bisync(ctx, e.fLocal, e.fRemote, e.bisyncOpt)
+	// ИСПРАВЛЕНИЕ 1: fRemote идет первым!
+	// При Resync=true rclone берет первый аргумент (Path1) за источник истины.
+	// Если локальная папка пустая, мы должны стянуть файлы из облака (fRemote).
+	err := bisync.Bisync(ctx, e.fRemote, e.fLocal, e.bisyncOpt)
 	if err != nil {
 		log.Printf("[Engine] Ошибка синхронизации: %v", err)
+		// ИСПРАВЛЕНИЕ 2: Если произошла ошибка, мы НЕ отключаем Resync,
+		// иначе синхронизация будет сломана до конца работы программы.
 	} else {
 		log.Println("[Engine] Синхронизация успешно завершена")
+		e.mu.Lock()
+		e.bisyncOpt.Resync = false // Отключаем Resync только после успешного старта
+		e.mu.Unlock()
 	}
 }
 
@@ -98,8 +106,9 @@ func (e *SyncEngine) watchLocal() {
 		log.Fatal(err)
 	}
 
-	timer := time.NewTimer(0)
-	<-timer.C
+	// ИСПРАВЛЕНИЕ 4: Создаем остановленный таймер
+	timer := time.NewTimer(time.Hour)
+	timer.Stop()
 
 	for {
 		select {
@@ -107,11 +116,21 @@ func (e *SyncEngine) watchLocal() {
 			if !ok {
 				return
 			}
-			if event.Op == fsnotify.Write || event.Op == fsnotify.Create || event.Op == fsnotify.Remove {
-				timer.Stop()
+			// ИСПРАВЛЕНИЕ 3: Правильная проверка битовых масок
+			if event.Op&fsnotify.Write == fsnotify.Write ||
+				event.Op&fsnotify.Create == fsnotify.Create ||
+				event.Op&fsnotify.Remove == fsnotify.Remove {
+				// Безопасный сброс таймера (Debounce)
+				if !timer.Stop() {
+					select {
+					case <-timer.C:
+					default:
+					}
+				}
 				timer.Reset(5 * time.Second)
 			}
 		case <-timer.C:
+			// Отправляем сигнал, не блокируя горутину
 			select {
 			case e.trigger <- struct{}{}:
 			default:
