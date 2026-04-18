@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cloud, HardDrive, Plus, X, Trash2, Server, Shield, Loader2, Filter } from 'lucide-react';
 import logo from './assets/images/logo-universal.png';
-import { ProviderType, openBrowserAuth, mountDriveLogic, unmountDriveLogic } from './logic.js';
+import { ProviderType, openBrowserAuth, mountDriveLogicOauth, unmountDriveLogic } from './logic.js';
 import './App.css';
 
 interface CloudProvider {
@@ -45,7 +45,7 @@ export default function App() {
     if (step === 2 && selectedProvider?.authType === 'oauth') {
       openBrowserAuth(selectedProvider.id).then((success) => {
         if (isMounted && success) handleMountSuccess(selectedProvider);
-      });
+      }).catch(e=>{isMounted == false;closeModal()});
     }
     return () => { isMounted = false; };
   }, [step, selectedProvider]);
@@ -53,7 +53,14 @@ export default function App() {
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProvider) return;
-    const success = await mountDriveLogic(selectedProvider.id, { info: "data" });
+    /* rework this for correct data */
+    const success = await mountDriveLogicOauth(selectedProvider.id,
+       "", 
+      {
+        MountPath:"",
+        CacheSizeInBytes:0,
+        CacheMode:null
+      }).catch(e=>console.log(e));
     if (success) handleMountSuccess(selectedProvider);
   };
 
