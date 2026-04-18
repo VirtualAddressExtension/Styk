@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация</title>
+    <style>
+        :root {
+            --bg-color: #1b1e20;
+            --bg2-color: #232629;
+            --fg-color: #2a2e32;
+            --fg2-color: #31363b;
+            --bgtext-color: #a5a9ad;
+            --fgtext-color: #eff0f1;
+            --highlight-color: #3daee9;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bg-color);
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Ubuntu, sans-serif;
+            color: var(--fgtext-color);
+        }
+
+        .auth-modal {
+            background-color: var(--bg2-color);
+            border: 1px solid var(--fg-color);
+            border-top: 3px solid var(--highlight-color);
+            padding: 30px 40px;
+            border-radius: 5px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            
+            /* Начальное состояние для анимации */
+            opacity: 0;
+            transform: scale(0.96);
+            /* Мягкая анимация появления */
+            animation: fadeScaleIn 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+        }
+
+        @keyframes fadeScaleIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .icon {
+            width: 48px;
+            height: 48px;
+            color: var(--highlight-color);
+        }
+
+        .text {
+            font-size: 16px;
+            font-weight: 400;
+            letter-spacing: 0.2px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-modal">
+        <!-- Минималистичная SVG иконка галочки -->
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        
+        <div class="text">Авторизовано успешно, можете закрыть браузер</div>
+    </div>
+
+</body>
+</html>
