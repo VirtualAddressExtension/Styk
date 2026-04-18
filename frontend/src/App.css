@@ -1,44 +1,97 @@
+:root {
+    --bg-outside: #121212;
+    --bg-app: #232629;
+    --bg-header: #31363b;
+    --bg-toolbar: #2a2e32;
+    --bg-workspace: #1b1e20;
+    
+    --border-color: #4d5057;
+    --border-hover: #3daee9;
+    
+    --text-main: #eff0f1;
+    --text-muted: #76797c;
+    --text-sub: #a5a9ad;
+    --text-btn-hover: #ffffff;
+    
+    --accent: #3daee9;
+    --accent-hover: #49b5eb;
+    --accent-active: #2b79a3;
+    
+    --danger: #da4453;
+    
+    --shadow-color: rgba(0, 0, 0, 0.5);
+    --overlay-bg: rgba(0, 0, 0, 0.6);
+}
+
+body.theme-light {
+    --bg-outside: #e0e0e0;
+    --bg-app: #eff0f1;
+    --bg-header: #e3e5e7;
+    --bg-toolbar: #d8d9da;
+    --bg-workspace: #fcfcfc;
+    
+    --border-color: #bdc3c7;
+    --border-hover: #3daee9;
+    
+    --text-main: #232629;
+    --text-muted: #76797c;
+    --text-sub: #5c6166;
+    --text-btn-hover: #ffffff;
+    
+    --accent: #3daee9;
+    --accent-hover: #49b5eb;
+    --accent-active: #2b79a3;
+    
+    --danger: #da4453;
+    
+    --shadow-color: rgba(0, 0, 0, 0.15);
+    --overlay-bg: rgba(0, 0, 0, 0.4);
+}
+
 body {
     margin: 0;
     padding: 0;
     font-family: "Noto Sans", "Ubuntu", "Segoe UI", sans-serif;
-    background-color: #121212;
-    color: #eff0f1;
+    background-color: var(--bg-outside);
+    color: var(--text-main);
     font-size: 13px;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
     overflow: hidden;
+    transition: background-color 0.2s, color 0.2s;
 }
 
 .qt-app-container {
     width: 405px;
     height: 720px;
-    background: #232629;
-    border: 1px solid #4d5057;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    background: var(--bg-app);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px var(--shadow-color);
     display: flex;
     flex-direction: column;
     position: relative;
     overflow: hidden;
+    transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 
 .qt-window-titlebar {
     height: 24px;
-    background: #232629;
-    border-bottom: 1px solid #31363b;
+    background: var(--bg-app);
+    border-bottom: 1px solid var(--bg-header);
     display: flex;
     justify-content: space-between;
     align-items: center;
     --wails-draggable: drag;
     -webkit-app-region: drag;
     user-select: none;
+    transition: background-color 0.2s, border-color 0.2s;
 }
 
 .qt-window-title {
     font-size: 10px;
-    color: #76797c;
+    color: var(--text-muted);
     padding-left: 8px;
     letter-spacing: 0.5px;
     font-weight: 600;
@@ -59,7 +112,7 @@ body {
     width: 36px;
     background: transparent;
     border: none;
-    color: #da4453;
+    color: var(--danger);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -70,17 +123,18 @@ body {
 }
 
 .qt-window-close-btn:hover {
-    background-color: #da4453;
-    color: #ffffff;
+    background-color: var(--danger);
+    color: var(--text-btn-hover);
 }
 
 .qt-header {
-    background: #31363b;
-    border-bottom: 1px solid #4d5057;
+    background: var(--bg-header);
+    border-bottom: 1px solid var(--border-color);
     padding: 10px 14px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    transition: background-color 0.2s, border-color 0.2s;
 }
 
 .qt-header-left {
@@ -108,7 +162,7 @@ body {
 
 .qt-subtitle {
     font-size: 9px;
-    color: #a5a9ad;
+    color: var(--text-sub);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -117,23 +171,24 @@ body {
     margin: 0;
     font-size: 20px;
     font-weight: 700;
-    color: #eff0f1;
+    color: var(--text-main);
     letter-spacing: 1px;
 }
 
 .qt-toolbar {
-    background: #2a2e32;
+    background: var(--bg-toolbar);
     padding: 8px 14px;
-    border-bottom: 1px solid #4d5057;
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     gap: 8px;
+    transition: background-color 0.2s, border-color 0.2s;
 }
 
 .qt-toolbar-label {
     display: flex;
     align-items: center;
-    color: #a5a9ad;
+    color: var(--text-sub);
 }
 
 .qt-flex-1 {
@@ -142,10 +197,11 @@ body {
 }
 
 .qt-workspace {
-    background: #1b1e20;
+    background: var(--bg-workspace);
     padding: 14px;
     flex-grow: 1;
     overflow-y: auto;
+    transition: background-color 0.2s;
 }
 
 .qt-workspace::-webkit-scrollbar {
@@ -153,16 +209,16 @@ body {
 }
 
 .qt-workspace::-webkit-scrollbar-track {
-    background: #232629;
-    border-left: 1px solid #4d5057;
+    background: var(--bg-app);
+    border-left: 1px solid var(--border-color);
 }
 
 .qt-workspace::-webkit-scrollbar-thumb {
-    background: #4d5057;
+    background: var(--border-color);
 }
 
 .qt-workspace::-webkit-scrollbar-thumb:hover {
-    background: #3daee9;
+    background: var(--accent);
 }
 
 .qt-empty-state {
@@ -171,7 +227,7 @@ body {
     align-items: center;
     justify-content: center;
     height: 100%;
-    color: #76797c;
+    color: var(--text-muted);
 }
 
 .qt-drives-list {
@@ -181,15 +237,16 @@ body {
 }
 
 .qt-card {
-    background: #232629;
-    border: 1px solid #4d5057;
+    background: var(--bg-app);
+    border: 1px solid var(--border-color);
     border-radius: 2px;
     display: flex;
     flex-direction: column;
+    transition: background-color 0.2s, border-color 0.2s;
 }
 
 .qt-card:hover {
-    border-color: #3daee9;
+    border-color: var(--border-hover);
 }
 
 .qt-card-header {
@@ -197,14 +254,14 @@ body {
     align-items: center;
     gap: 10px;
     padding: 10px;
-    border-bottom: 1px solid #31363b;
+    border-bottom: 1px solid var(--bg-header);
 }
 
 .qt-card-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #eff0f1;
+    color: var(--text-main);
 }
 
 .qt-card-details {
@@ -215,12 +272,12 @@ body {
 .qt-card-title {
     font-weight: 600;
     font-size: 13px;
-    color: #eff0f1;
+    color: var(--text-main);
 }
 
 .qt-card-point {
     font-size: 11px;
-    color: #a5a9ad;
+    color: var(--text-sub);
 }
 
 .qt-card-body {
@@ -232,20 +289,20 @@ body {
     justify-content: space-between;
     font-size: 11px;
     margin-bottom: 4px;
-    color: #eff0f1;
+    color: var(--text-main);
 }
 
 .qt-progress-bar {
     height: 12px;
-    background: #1b1e20;
-    border: 1px solid #4d5057;
+    background: var(--bg-workspace);
+    border: 1px solid var(--border-color);
     border-radius: 2px;
     overflow: hidden;
 }
 
 .qt-progress-fill {
     height: 100%;
-    background: #3daee9;
+    background: var(--accent);
 }
 
 .qt-card-footer {
@@ -253,10 +310,10 @@ body {
 }
 
 .qt-btn {
-    background-color: #31363b;
-    border: 1px solid #4d5057;
+    background-color: var(--bg-header);
+    border: 1px solid var(--border-color);
     border-radius: 2px;
-    color: #eff0f1;
+    color: var(--text-main);
     padding: 6px 12px;
     font-size: 12px;
     cursor: pointer;
@@ -264,7 +321,7 @@ body {
     align-items: center;
     justify-content: center;
     gap: 6px;
-    transition: background 0.1s;
+    transition: background 0.1s, border-color 0.1s, color 0.1s;
     flex-shrink: 0;
 }
 
@@ -277,43 +334,44 @@ body {
 }
 
 .qt-btn:hover {
-    background-color: #3daee9;
-    border-color: #3daee9;
-    color: #ffffff;
+    background-color: var(--accent);
+    border-color: var(--border-hover);
+    color: var(--text-btn-hover);
 }
 
 .qt-btn:active {
-    background-color: #2b79a3;
+    background-color: var(--accent-active);
 }
 
 .qt-btn-primary {
-    background-color: #3daee9;
-    color: #ffffff;
-    border-color: #3daee9;
+    background-color: var(--accent);
+    color: var(--text-btn-hover);
+    border-color: var(--accent);
 }
 
 .qt-btn-primary:hover {
-    background-color: #49b5eb;
+    background-color: var(--accent-hover);
 }
 
 .qt-btn-danger:hover {
-    background-color: #da4453;
-    color: #ffffff;
-    border-color: #da4453;
+    background-color: var(--danger);
+    color: var(--text-btn-hover);
+    border-color: var(--danger);
 }
 
 .qt-input {
-    border: 1px solid #4d5057;
+    border: 1px solid var(--border-color);
     border-radius: 2px;
     padding: 5px 8px;
     font-size: 12px;
-    background: #1b1e20;
-    color: #eff0f1;
+    background: var(--bg-workspace);
+    color: var(--text-main);
     outline: none;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
 }
 
 .qt-input:focus {
-    border-color: #3daee9;
+    border-color: var(--accent);
 }
 
 .qt-input-row {
@@ -323,13 +381,13 @@ body {
 }
 
 .qt-unit-select {
-    width: 60px;
+    width: 85px;
 }
 
 .qt-dialog-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: var(--overlay-bg);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -337,54 +395,73 @@ body {
 }
 
 .qt-dialog {
-    background: #232629;
-    border: 1px solid #4d5057;
+    background: var(--bg-app);
+    border: 1px solid var(--border-color);
     border-radius: 2px;
     width: 90%;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 15px var(--shadow-color);
     display: flex;
     flex-direction: column;
 }
 
 .qt-dialog-titlebar {
-    background: #31363b;
-    border-bottom: 1px solid #4d5057;
+    background: var(--bg-header);
+    border-bottom: 1px solid var(--border-color);
     padding: 8px 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-weight: 600;
     font-size: 12px;
-    color: #eff0f1;
+    color: var(--text-main);
 }
 
 .qt-dialog-close {
     background: none;
     border: none;
     cursor: pointer;
-    color: #a5a9ad;
+    color: var(--text-sub);
     padding: 2px;
 }
 
 .qt-dialog-close:hover {
-    color: #da4453;
+    color: var(--danger);
 }
 
 .qt-dialog-content {
     padding: 14px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.qt-dialog-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.qt-dialog-content::-webkit-scrollbar-track {
+    background: var(--bg-app);
+    border-left: 1px solid var(--border-color);
+}
+
+.qt-dialog-content::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+}
+
+.qt-dialog-content::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
 }
 
 .qt-label {
     margin: 0 0 10px 0;
-    color: #eff0f1;
+    color: var(--text-main);
 }
 
 .qt-provider-list {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    background: #1b1e20;
-    border: 1px solid #4d5057;
+    background: var(--bg-workspace);
+    border: 1px solid var(--border-color);
     padding: 4px;
 }
 
@@ -397,12 +474,12 @@ body {
     border: none;
     cursor: pointer;
     text-align: left;
-    color: #eff0f1;
+    color: var(--text-main);
 }
 
 .qt-list-item:hover {
-    background: #3daee9;
-    color: #fff;
+    background: var(--accent);
+    color: var(--text-btn-hover);
 }
 
 .qt-form-group {
@@ -414,7 +491,7 @@ body {
 .qt-form-group label {
     font-size: 11px;
     margin-bottom: 4px;
-    color: #a5a9ad;
+    color: var(--text-sub);
 }
 
 .qt-dialog-actions {
@@ -433,13 +510,13 @@ body {
 
 .qt-spinner {
     animation: spin 1s linear infinite;
-    color: #3daee9;
+    color: var(--accent);
     margin-bottom: 10px;
 }
 
 .qt-muted-text {
     font-size: 11px;
-    color: #76797c;
+    color: var(--text-muted);
     margin-top: 5px;
 }
 

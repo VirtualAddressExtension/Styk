@@ -30,16 +30,56 @@ const PROVIDERS: CloudProvider[] = [
 ];
 
 export default function App() {
-  const [drives, setDrives] = useState<MountedDrive[]>([
-    { id: '1', name: 'Мой Яндекс', provider: 'Yandex', totalSpace: 100, usedSpace: 45, letter: 'Y:' }
-  ]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [step, setStep] = useState<1 | 2>(1);
-  const [selectedProvider, setSelectedProvider] = useState<CloudProvider | null>(null);
+    const [drives, setDrives] = useState<MountedDrive[]>([
+        { id: '1', name: 'Мой Яндекс', provider: 'Yandex', totalSpace: 100, usedSpace: 45, letter: 'Y:' }
+    ]);
+    
+    const [modalType, setModalType] = useState<'none' | 'add' | 'settings'>('none');
+    const [step, setStep] = useState<1 | 2>(1);
+    const [selectedProvider, setSelectedProvider] = useState<CloudProvider | null>(null);
 
   const [filterProvider, setFilterProvider] = useState<string>('All');
   const [filterSize, setFilterSize] = useState<string>('All');
 
+    const [appTheme, setAppTheme] = useState<'system' | 'dark' | 'light'>('system');
+
+    const [cacheMode, setCacheMode] = useState<string>('off');             
+    const [cacheSize, setCacheSize] = useState<number | string>(512);      
+    const [cacheUnit, setCacheUnit] = useState<string>('MB');              
+    const [configPath, setConfigPath] = useState<string>('C:\\KSP_Styk\\Config'); 
+    
+    const [cachePath, setCachePath] = useState<string>('C:\\KSP_Styk\\Cache'); 
+    const [cacheLifetime, setCacheLifetime] = useState<number | string>(3600); 
+    const [cacheLifetimeUnit, setCacheLifetimeUnit] = useState<string>('s');   
+    const [cacheUpdate, setCacheUpdate] = useState<number | string>(300);      
+    const [cacheUpdateUnit, setCacheUpdateUnit] = useState<string>('s');       
+
+    useEffect(() => {
+        const applyTheme = () => {
+            let isLight = false;
+            if (appTheme === 'system') {
+                isLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+            } else {
+                isLight = appTheme === 'light';
+            }
+
+            if (isLight) {
+                document.body.classList.add('theme-light');
+            } else {
+                document.body.classList.remove('theme-light');
+            }
+        };
+
+        applyTheme();
+
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: light)');
+        const handler = () => {
+            if (appTheme === 'system') applyTheme();
+        };
+        
+        mediaQuery.addEventListener('change', handler);
+        return () => mediaQuery.removeEventListener('change', handler);
+    }, [appTheme]);
   useEffect(() => {
     let isMounted = true;
     if (step === 2 && selectedProvider?.authType === 'oauth') {
@@ -107,6 +147,39 @@ export default function App() {
     const handleSettingsSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         closeModal();
+    };
+
+    const handleCacheUnitChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const newUnit = e.target.value;
+        const multipliers: Record<string, number> = { MB: 1, GB: 1024, TB: 1048576 };
+        if (cacheSize !== '') {
+            const num = Number(cacheSize);
+            const converted = num * (multipliers[cacheUnit] / multipliers[newUnit]);
+            setCacheSize(Number(converted.toFixed(6))); 
+        }
+        setCacheUnit(newUnit);
+    };
+
+    const handleCacheLifetimeUnitChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const newUnit = e.target.value;
+        const multipliers: Record<string, number> = { s: 1, m: 60, h: 3600, d: 86400 }; 
+        if (cacheLifetime !== '') {
+            const num = Number(cacheLifetime);
+            const converted = num * (multipliers[cacheLifetimeUnit] / multipliers[newUnit]);
+            setCacheLifetime(Number(converted.toFixed(6)));
+        }
+        setCacheLifetimeUnit(newUnit);
+    };
+
+    const handleCacheUpdateUnitChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const newUnit = e.target.value;
+        const multipliers: Record<string, number> = { s: 1, m: 60, h: 3600, d: 86400 };
+        if (cacheUpdate !== '') {
+            const num = Number(cacheUpdate);
+            const converted = num * (multipliers[cacheUpdateUnit] / multipliers[newUnit]);
+            setCacheUpdate(Number(converted.toFixed(6)));
+        }
+        setCacheUpdateUnit(newUnit);
     };
 
     const filteredDrives = drives.filter(drive => {
@@ -234,6 +307,15 @@ export default function App() {
                                         <form onSubmit={handleSettingsSubmit} className="qt-form">
                                             
                                             <div className="qt-form-group">
+                                                <label>Тема оформления:</label>
+                                                <select className="qt-input" value={appTheme} onChange={(e) => setAppTheme(e.target.value as 'system' | 'dark' | 'light')}>
+                                                    <option value="system">Как в системе</option>
+                                                    <option value="dark">Тёмная</option>
+                                                    <option value="light">Светлая</option>
+                                                </select>
+                                            </div>
+
+                                            <div className="qt-form-group">
                                                 <label>Режим работы кэша:</label>
                                                 <select className="qt-input" value={cacheMode} onChange={(e) => setCacheMode(e.target.value)}>
                                                     <option value="off">Отключен</option>
@@ -247,16 +329,70 @@ export default function App() {
                                                 <div className="qt-input-row">
                                                     <input 
                                                         type="number" 
+                                                        step="any"
                                                         className="qt-input qt-flex-1" 
-                                                        min="1" 
+                                                        min="0" 
                                                         value={cacheSize} 
                                                         onChange={(e) => setCacheSize(e.target.value ? Number(e.target.value) : '')} 
                                                     />
-                                                    <select className="qt-input qt-unit-select" value={cacheUnit} onChange={(e) => setCacheUnit(e.target.value)}>
+                                                    <select className="qt-input qt-unit-select" value={cacheUnit} onChange={handleCacheUnitChange}>
                                                         <option value="MB">МБ</option>
                                                         <option value="GB">ГБ</option>
                                                         <option value="TB">ТБ</option>
                                                     </select>
+                                                </div>
+                                            </div>
+
+                                            <div className="qt-form-group">
+                                                <label>Длительность жизни кэша:</label>
+                                                <div className="qt-input-row">
+                                                    <input 
+                                                        type="number" 
+                                                        step="any"
+                                                        className="qt-input qt-flex-1" 
+                                                        min="0" 
+                                                        value={cacheLifetime} 
+                                                        onChange={(e) => setCacheLifetime(e.target.value ? Number(e.target.value) : '')} 
+                                                    />
+                                                    <select className="qt-input qt-unit-select" value={cacheLifetimeUnit} onChange={handleCacheLifetimeUnitChange}>
+                                                        <option value="s">Сек</option>
+                                                        <option value="m">Мин</option>
+                                                        <option value="h">Час</option>
+                                                        <option value="d">Дн</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div className="qt-form-group">
+                                                <label>Интервал обновления кэша:</label>
+                                                <div className="qt-input-row">
+                                                    <input 
+                                                        type="number" 
+                                                        step="any"
+                                                        className="qt-input qt-flex-1" 
+                                                        min="0" 
+                                                        value={cacheUpdate} 
+                                                        onChange={(e) => setCacheUpdate(e.target.value ? Number(e.target.value) : '')} 
+                                                    />
+                                                    <select className="qt-input qt-unit-select" value={cacheUpdateUnit} onChange={handleCacheUpdateUnitChange}>
+                                                        <option value="s">Сек</option>
+                                                        <option value="m">Мин</option>
+                                                        <option value="h">Час</option>
+                                                        <option value="d">Дн</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div className="qt-form-group">
+                                                <label>Папка кэша:</label>
+                                                <div className="qt-input-row">
+                                                    <input 
+                                                        type="text" 
+                                                        className="qt-input qt-flex-1" 
+                                                        value={cachePath} 
+                                                        onChange={(e) => setCachePath(e.target.value)} 
+                                                    />
+                                                    <button type="button" className="qt-btn">Обзор...</button>
                                                 </div>
                                             </div>
 
