@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Cloud, HardDrive, Plus, X, Trash2, Server, Shield, Loader2, Filter, Settings } from 'lucide-react';
+import { 
+    Cloud, HardDrive, Plus, X, Trash2, Server, 
+    Shield, Loader2, Filter, Settings, FolderPlus, 
+    Link as LinkIcon, ArrowRight 
+} from 'lucide-react';
 import logo from './assets/images/logo-universal.png';
 import { ProviderType, openBrowserAuth, mountDriveLogicOauth, unmountDriveLogic } from './logic.js';
 import './App.css';
@@ -13,6 +17,12 @@ interface CloudProvider {
     requires: string[];
 }
 
+interface FolderLink {
+    id: string;
+    remotePath: string;
+    localPath: string;
+}
+
 interface MountedDrive {
     id: string;
     name: string;
@@ -20,6 +30,7 @@ interface MountedDrive {
     totalSpace: number;
     usedSpace: number;  
     letter: string;
+    links?: FolderLink[];
 }
 
 const PROVIDERS: CloudProvider[] = [
@@ -29,21 +40,35 @@ const PROVIDERS: CloudProvider[] = [
     { id: 'WebDAV', name: 'WebDAV', icon: <Shield size={16} />, authType: 'form', requires: ['URL', 'Логин', 'Пароль'] },
 ];
 
+// Вспомогательная функция для форматирования байт
+const formatBytes = (bytes: number) => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};
+
+type ModalType = 'none' | 'add' | 'settings' | 'addLinkStep1' | 'addLinkStep2' | 'linkManager';
+
 export default function App() {
     const [drives, setDrives] = useState<MountedDrive[]>([
-        { id: '1', name: 'Мой Яндекс', provider: 'Yandex', totalSpace: 100, usedSpace: 45, letter: 'Y:' }
+        { id: '1', name: 'Мой Яндекс', provider: 'Yandex', totalSpace: 100, usedSpace: 45, letter: 'Y:', links: [] }
     ]);
     
-    const [modalType, setModalType] = useState<'none' | 'add' | 'settings'>('none');
+    const [modalType, setModalType] = useState<ModalType>('none');
     const [step, setStep] = useState<1 | 2>(1);
     const [selectedProvider, setSelectedProvider] = useState<CloudProvider | null>(null);
+
+    const [activeDriveId, setActiveDriveId] = useState<string | null>(null);
+    const [tempRemotePath, setTempRemotePath] = useState<string>('/');
+    const [tempLocalPath, setTempLocalPath] = useState<string>('');
 
     const [filterProvider, setFilterProvider] = useState<string>('All');
     const [filterSize, setFilterSize] = useState<string>('All');
 
     const [appTheme, setAppTheme] = useState<'system' | 'dark' | 'light'>('system');
 
-    // Состояния настроек кэша
     const [cacheMode, setCacheMode] = useState<string>('off');             
     const [cacheSize, setCacheSize] = useState<number | string>(512);      
     const [cacheUnit, setCacheUnit] = useState<string>('MB');              
@@ -54,6 +79,9 @@ export default function App() {
     const [cacheLifetimeUnit, setCacheLifetimeUnit] = useState<string>('s');   
     const [cacheUpdate, setCacheUpdate] = useState<number | string>(300);      
     const [cacheUpdateUnit, setCacheUpdateUnit] = useState<string>('s');       
+
+    // Мок свободного места на ПК (в будущем получать из Wails)
+    const [localFreeSpaceBytes] = useState<number>(250 * 1024 * 1024 * 1024); // 250 GB
 
     useEffect(() => {
         const applyTheme = () => {
@@ -91,9 +119,7 @@ export default function App() {
     return () => { isMounted = false; };
   }, [step, selectedProvider]);
 
-    // Вспомогательная функция для генерации DiskOptions на основе текущих настроек
     const getDiskOptions = (letter: string) => {
-        // Перевод размера кэша в байты, так как бэкенд ждет CacheSizeInBytes
         const bytesMultipliers: Record<string, number> = { MB: 1048576, GB: 1073741824, TB: 1099511627776 };
         const sizeInBytes = Number(cacheSize) * (bytesMultipliers[cacheUnit] || 1048576);
 
@@ -121,7 +147,6 @@ export default function App() {
                 // 3. Формируем настройки монтирования
                 const options = getDiskOptions(letter);
 
-                // 4. Отправляем команду на бэкенд
                 const success = await mountDriveLogicOauth(provider.id, token, options);
                 
                 if (success) {
@@ -140,19 +165,14 @@ export default function App() {
         if (!selectedProvider) return;
         
         try {
-            // Для form-based авторизации передаем данные формы вместо Oauth-токена 
-            // (может потребоваться корректировка в зависимости от реализации бэкенда для Nextcloud/WebDAV)
-            const mockTokenOrFormData = { info: "data from form" }; 
-            
+            const formDataToken = { info: "data from form inputs" };
             const letter = `${String.fromCharCode(65 + Math.floor(Math.random() * 26))}:`;
             const options = getDiskOptions(letter);
 
-            const success = await mountDriveLogicOauth(selectedProvider.id, mockTokenOrFormData, options);
-            if (success) {
-                handleMountSuccess(selectedProvider, letter);
-            }
+            const success = await mountDriveLogicOauth(selectedProvider.id, formDataToken, options);
+            if (success) handleMountSuccess(selectedProvider, letter);
         } catch (error) {
-            console.error(`Ошибка монтирования ${selectedProvider.id}:`, error);
+            console.error(`Ошибка монтировани�� ${selectedProvider.id}:`, error);
         }
     };
 
@@ -163,7 +183,8 @@ export default function App() {
             provider: provider.id,
             totalSpace: Math.floor(Math.random() * 500) + 50,
             usedSpace: Math.floor(Math.random() * 50),
-            letter: letter
+            letter: letter,
+            links: [] 
         };
         setDrives(prev => [...prev, newDrive]);
         closeModal();
@@ -174,14 +195,73 @@ export default function App() {
             const success = await unmountDriveLogic(id);
             if (success) setDrives(drives.filter(d => d.id !== id));
         } catch (error) {
-            console.error(`Ошибка при размонтировании диска ${id}:`, error);
+            console.error(`Ошибка размонтирования диска ${id}:`, error);
         }
+    };
+
+    const startFolderLinking = (driveId: string) => {
+        setActiveDriveId(driveId);
+        setTempRemotePath('/'); 
+        setTempLocalPath('');
+        setModalType('addLinkStep1');
+    };
+
+    const handleAddLinkStep1Submit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setModalType('addLinkStep2');
+    };
+
+    const handleAddLinkStep2Submit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!activeDriveId || !tempLocalPath) return;
+
+        const newLink: FolderLink = {
+            id: Math.random().toString(36).substr(2, 9),
+            remotePath: tempRemotePath,
+            localPath: tempLocalPath
+        };
+
+        setDrives(prev => prev.map(drive => {
+            if (drive.id === activeDriveId) {
+                return { ...drive, links: [...(drive.links || []), newLink] };
+            }
+            return drive;
+        }));
+
+        closeModal();
+    };
+
+    const openLinkManager = (driveId: string) => {
+        setActiveDriveId(driveId);
+        setModalType('linkManager');
+    };
+
+    const updateLinkProperty = (driveId: string, linkId: string, field: keyof FolderLink, value: string) => {
+        setDrives(prev => prev.map(drive => {
+            if (drive.id === driveId) {
+                const updatedLinks = drive.links?.map(link => 
+                    link.id === linkId ? { ...link, [field]: value } : link
+                );
+                return { ...drive, links: updatedLinks };
+            }
+            return drive;
+        }));
+    };
+
+    const deleteLink = (driveId: string, linkId: string) => {
+        setDrives(prev => prev.map(drive => {
+            if (drive.id === driveId) {
+                return { ...drive, links: drive.links?.filter(l => l.id !== linkId) };
+            }
+            return drive;
+        }));
     };
 
     const closeModal = () => {
         setModalType('none');
         setStep(1);
         setSelectedProvider(null);
+        setActiveDriveId(null);
     };
 
     const handleAppClose = () => {
@@ -190,9 +270,44 @@ export default function App() {
         }
     };
 
-    const handleSettingsSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        closeModal();
+    // --- Обработчики и контроль ввода данных ---
+
+    const cleanNumberInput = (val: string) => {
+        // Убираем всё кроме цифр и точек
+        let cleaned = val.replace(/[^0-9.]/g, '');
+        // Оставляем только одну точку, если их несколько
+        if ((cleaned.match(/\./g) || []).length > 1) {
+            const parts = cleaned.split('.');
+            cleaned = parts[0] + '.' + parts.slice(1).join('');
+        }
+        return cleaned;
+    };
+
+    const handleCacheSizeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = cleanNumberInput(e.target.value);
+        if (val === '') {
+            setCacheSize('');
+            return;
+        }
+
+        const numVal = parseFloat(val);
+        const bytesMultipliers: Record<string, number> = { MB: 1048576, GB: 1073741824, TB: 1099511627776 };
+        const multiplier = bytesMultipliers[cacheUnit] || 1048576;
+        
+        // Лимит размера кэша = Свободное место на диске
+        const maxAllowed = localFreeSpaceBytes / multiplier;
+
+        if (numVal > maxAllowed) {
+            // Если ввели больше доступного, сбрасываем на максимум
+            setCacheSize(maxAllowed.toFixed(2));
+        } else {
+            setCacheSize(val);
+        }
+    };
+
+    const handleTimeInput = (e: React.ChangeEvent<HTMLInputElement>, setter: React.Dispatch<React.SetStateAction<number | string>>) => {
+        const val = cleanNumberInput(e.target.value);
+        setter(val);
     };
 
     const handleCacheUnitChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -235,6 +350,8 @@ export default function App() {
         if (filterSize === 'large') matchSize = drive.totalSpace >= 100;
         return matchProvider && matchSize;
     });
+
+    const activeDrive = drives.find(d => d.id === activeDriveId);
 
     return (
         <div className="qt-window-bg">
@@ -290,7 +407,13 @@ export default function App() {
                     ) : (
                         <div className="qt-drives-list">
                             {filteredDrives.map((drive) => (
-                                <DriveCard key={drive.id} drive={drive} onUnmount={handleUnmount} />
+                                <DriveCard 
+                                    key={drive.id} 
+                                    drive={drive} 
+                                    onUnmount={handleUnmount} 
+                                    onManageFolders={() => startFolderLinking(drive.id)}
+                                    onOpenLinkManager={() => openLinkManager(drive.id)}
+                                />
                             ))}
                         </div>
                     )}
@@ -308,27 +431,25 @@ export default function App() {
                             >
                                 <div className="qt-dialog-titlebar">
                                     <span>
-                                        {modalType === 'settings' 
-                                            ? 'Настройки' 
-                                            : (step === 1 ? 'Монтирование' : selectedProvider?.name)}
+                                        {modalType === 'settings' ? 'Настройки' : 
+                                         modalType === 'add' ? (step === 1 ? 'Монтирование' : selectedProvider?.name) :
+                                         modalType === 'addLinkStep1' ? 'Выбор папки на диске' :
+                                         modalType === 'addLinkStep2' ? 'Создание точки монтирования' :
+                                         modalType === 'linkManager' ? 'Менеджер ссылок' : ''}
                                     </span>
                                     <button onClick={closeModal} className="qt-dialog-close"><X size={14} /></button>
                                 </div>
 
                                 <div className="qt-dialog-content">
-                                    {modalType === 'add' ? (
+                                    
+                                    {modalType === 'add' && (
                                         step === 1 ? (
                                             <>
                                                 <p className="qt-label">Файловая система:</p>
                                                 <div className="qt-provider-list">
                                                     {PROVIDERS.map((provider) => (
-                                                        <button 
-                                                            key={provider.id} 
-                                                            onClick={() => handleProviderSelect(provider)} 
-                                                            className="qt-list-item"
-                                                        >
-                                                            {provider.icon}
-                                                            <span>{provider.name}</span>
+                                                        <button key={provider.id} onClick={() => handleProviderSelect(provider)} className="qt-list-item">
+                                                            {provider.icon}<span>{provider.name}</span>
                                                         </button>
                                                     ))}
                                                 </div>
@@ -353,9 +474,91 @@ export default function App() {
                                                 </div>
                                             </form>
                                         )
-                                    ) : (
-                                        <form onSubmit={handleSettingsSubmit} className="qt-form">
+                                    )}
+
+                                    {modalType === 'addLinkStep1' && (
+                                        <form onSubmit={handleAddLinkStep1Submit} className="qt-form">
+                                            <div className="qt-form-group">
+                                                <label>Введите путь папки на удаленном диске (или корень /):</label>
+                                                <div className="qt-input-row">
+                                                    <input 
+                                                        type="text" className="qt-input qt-flex-1" 
+                                                        value={tempRemotePath} onChange={(e) => setTempRemotePath(e.target.value)} required
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="qt-dialog-actions" style={{ marginTop: '16px' }}>
+                                                <button type="button" onClick={closeModal} className="qt-btn">Отмена</button>
+                                                <button type="submit" className="qt-btn qt-btn-primary">Далее <ArrowRight size={14}/></button>
+                                            </div>
+                                        </form>
+                                    )}
+
+                                    {modalType === 'addLinkStep2' && (
+                                        <form onSubmit={handleAddLinkStep2Submit} className="qt-form">
+                                            <div className="qt-form-group">
+                                                <label>Куда смонтировать на ПК (локальная папка):</label>
+                                                <div className="qt-input-row">
+                                                    <input 
+                                                        type="text" className="qt-input qt-flex-1" placeholder="C:\MyDrive\Folder"
+                                                        value={tempLocalPath} onChange={(e) => setTempLocalPath(e.target.value)} required
+                                                    />
+                                                    {/* ЗАГЛУШКА ДЛЯ ОБЗОРА */}
+                                                    <button type="button" className="qt-btn">Обзор...</button>
+                                                </div>
+                                            </div>
+                                            <div className="qt-dialog-actions" style={{ marginTop: '16px' }}>
+                                                <button type="button" onClick={() => setModalType('addLinkStep1')} className="qt-btn">Назад</button>
+                                                <button type="submit" className="qt-btn qt-btn-primary">Создать ссылку</button>
+                                            </div>
+                                        </form>
+                                    )}
+
+                                    {modalType === 'linkManager' && activeDrive && (
+                                        <div className="qt-form">
+                                            <p className="qt-label" style={{ marginBottom: '12px' }}>Управление ссылками для {activeDrive.name}</p>
                                             
+                                            {(!activeDrive.links || activeDrive.links.length === 0) ? (
+                                                <div className="qt-empty-state" style={{ padding: '20px 0' }}>
+                                                    <p>Нет созданных ссылок</p>
+                                                </div>
+                                            ) : (
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                                    {activeDrive.links.map(link => (
+                                                        <div key={link.id} style={{ background: 'var(--bg-workspace)', padding: '10px', border: '1px solid var(--border-color)', borderRadius: '2px' }}>
+                                                            <div className="qt-input-row" style={{ marginBottom: '8px' }}>
+                                                                <span style={{ fontSize: '11px', color: 'var(--text-sub)', width: '60px' }}>Диск:</span>
+                                                                <input 
+                                                                    className="qt-input qt-flex-1" value={link.remotePath}
+                                                                    onChange={(e) => updateLinkProperty(activeDrive.id, link.id, 'remotePath', e.target.value)}
+                                                                />
+                                                            </div>
+                                                            <div className="qt-input-row">
+                                                                <span style={{ fontSize: '11px', color: 'var(--text-sub)', width: '60px' }}>ПК:</span>
+                                                                <input 
+                                                                    className="qt-input qt-flex-1" value={link.localPath}
+                                                                    onChange={(e) => updateLinkProperty(activeDrive.id, link.id, 'localPath', e.target.value)}
+                                                                />
+                                                                <button 
+                                                                    className="qt-btn qt-btn-danger qt-btn-icon" 
+                                                                    onClick={() => deleteLink(activeDrive.id, link.id)} title="Удалить ссылку"
+                                                                >
+                                                                    <Trash2 size={14} />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            <div className="qt-dialog-actions" style={{ marginTop: '16px' }}>
+                                                <button onClick={closeModal} className="qt-btn qt-btn-primary">Закрыть</button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {modalType === 'settings' && (
+                                        <form onSubmit={(e) => { e.preventDefault(); closeModal(); }} className="qt-form">
                                             <div className="qt-form-group">
                                                 <label>Тема оформления:</label>
                                                 <select className="qt-input" value={appTheme} onChange={(e) => setAppTheme(e.target.value as 'system' | 'dark' | 'light')}>
@@ -377,29 +580,74 @@ export default function App() {
                                             <div className="qt-form-group">
                                                 <label>Размер кэша:</label>
                                                 <div className="qt-input-row">
+                                                    {/* Заменён type="number" на text + кастомный хэндлер ввода для безопасности */}
                                                     <input 
-                                                        type="number" 
-                                                        step="any"
+                                                        type="text" 
                                                         className="qt-input qt-flex-1" 
-                                                        min="0" 
                                                         value={cacheSize} 
-                                                        onChange={(e) => setCacheSize(e.target.value ? Number(e.target.value) : '')} 
+                                                        onChange={handleCacheSizeChange} 
                                                     />
                                                     <select className="qt-input qt-unit-select" value={cacheUnit} onChange={handleCacheUnitChange}>
-                                                        <option value="MB">МБ</option>
-                                                        <option value="GB">ГБ</option>
-                                                        <option value="TB">ТБ</option>
+                                                        <option value="MB">МБ</option><option value="GB">ГБ</option><option value="TB">ТБ</option>
+                                                    </select>
+                                                </div>
+                                                <span className="qt-muted-text" style={{ display: 'block', marginTop: '4px', fontSize: '10px' }}>
+                                                    Свободно на диске ПК: {formatBytes(localFreeSpaceBytes)}
+                                                </span>
+                                            </div>
+
+                                            <div className="qt-form-group">
+                                                <label>Длительность жизни кэша:</label>
+                                                <div className="qt-input-row">
+                                                    <input 
+                                                        type="text" 
+                                                        className="qt-input qt-flex-1" 
+                                                        value={cacheLifetime} 
+                                                        onChange={(e) => handleTimeInput(e, setCacheLifetime)} 
+                                                    />
+                                                    <select className="qt-input qt-unit-select" value={cacheLifetimeUnit} onChange={handleCacheLifetimeUnitChange}>
+                                                        <option value="s">Сек</option><option value="m">Мин</option><option value="h">Час</option><option value="d">Дн</option>
                                                     </select>
                                                 </div>
                                             </div>
 
-                                            {/* Остальные настройки опущены для краткости, они остались без изменений */}
+                                            <div className="qt-form-group">
+                                                <label>Интервал обновления кэша:</label>
+                                                <div className="qt-input-row">
+                                                    <input 
+                                                        type="text" 
+                                                        className="qt-input qt-flex-1" 
+                                                        value={cacheUpdate} 
+                                                        onChange={(e) => handleTimeInput(e, setCacheUpdate)} 
+                                                    />
+                                                    <select className="qt-input qt-unit-select" value={cacheUpdateUnit} onChange={handleCacheUpdateUnitChange}>
+                                                        <option value="s">Сек</option><option value="m">Мин</option><option value="h">Час</option><option value="d">Дн</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div className="qt-form-group">
+                                                <label>Папка кэша:</label>
+                                                <div className="qt-input-row">
+                                                    <input type="text" className="qt-input qt-flex-1" value={cachePath} onChange={(e) => setCachePath(e.target.value)} />
+                                                    {/* ЗАГЛУШКА ДЛЯ ОБЗОРА */}
+                                                    <button type="button" className="qt-btn">Обзор...</button>
+                                                </div>
+                                            </div>
+
+                                            <div className="qt-form-group">
+                                                <label>Папка сохранения конфигурации:</label>
+                                                <div className="qt-input-row">
+                                                    <input type="text" className="qt-input qt-flex-1" value={configPath} onChange={(e) => setConfigPath(e.target.value)} />
+                                                    {/* ЗАГЛУШКА ДЛЯ ОБЗОРА */}
+                                                    <button type="button" className="qt-btn">Обзор...</button>
+                                                </div>
+                                            </div>
 
                                             <div className="qt-dialog-actions" style={{ marginTop: '16px' }}>
                                                 <button type="button" onClick={closeModal} className="qt-btn">Отмена</button>
                                                 <button type="submit" className="qt-btn qt-btn-primary">Сохранить</button>
                                             </div>
-
                                         </form>
                                     )}
                                 </div>
@@ -413,9 +661,20 @@ export default function App() {
   }
 
 
-function DriveCard({ drive, onUnmount }: { drive: MountedDrive, onUnmount: (id: string) => void }) {
+function DriveCard({ 
+    drive, 
+    onUnmount, 
+    onManageFolders, 
+    onOpenLinkManager 
+}: { 
+    drive: MountedDrive; 
+    onUnmount: (id: string) => void;
+    onManageFolders: () => void;
+    onOpenLinkManager: () => void;
+}) {
     const providerConfig = PROVIDERS.find(p => p.id === drive.provider);
     const percentage = Math.round((drive.usedSpace / drive.totalSpace) * 100);
+    const hasLinks = drive.links && drive.links.length > 0;
 
     return (
         <div className="qt-card">
@@ -423,7 +682,7 @@ function DriveCard({ drive, onUnmount }: { drive: MountedDrive, onUnmount: (id: 
                 <div className="qt-card-icon">{providerConfig?.icon}</div>
                 <div className="qt-card-details">
                     <span className="qt-card-title">{drive.name}</span>
-                    <span className="qt-card-point">Точка: {drive.letter}</span>
+                    {/*<span className="qt-card-point">Точка: {drive.letter}</span>*/}
                 </div>
             </div>
             <div className="qt-card-body">
@@ -435,9 +694,19 @@ function DriveCard({ drive, onUnmount }: { drive: MountedDrive, onUnmount: (id: 
                     <div className="qt-progress-fill" style={{ width: `${percentage}%` }}></div>
                 </div>
             </div>
-            <div className="qt-card-footer">
+            <div className="qt-card-footer" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <button onClick={onManageFolders} className="qt-btn qt-btn-full">
+                    <FolderPlus size={14} /> Управление папками
+                </button>
+                
+                {hasLinks && (
+                    <button onClick={onOpenLinkManager} className="qt-btn qt-btn-full">
+                        <LinkIcon size={14} /> Менеджер ссылок
+                    </button>
+                )}
+
                 <button onClick={() => onUnmount(drive.id)} className="qt-btn qt-btn-danger qt-btn-full">
-                    <Trash2 size={12} /> Отмонтировать
+                    <Trash2 size={14} /> Отмонтировать
                 </button>
             </div>
         </div>
