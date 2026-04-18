@@ -56,9 +56,16 @@ func main() {
 	}, func() {})
 
 	err := wails.Run(&options.App{
-		Title:  "КСП «СТЫК»",
-		Width:  1024,
-		Height: 768,
+		Title:         "КСП «СТЫК»",
+		Width:         405,
+		Height:        720,
+		DisableResize: true,
+		Fullscreen:    false,
+		Frameless:     true,
+		MinWidth:      405,
+		MinHeight:     720,
+		MaxWidth:      405,
+		MaxHeight:     720,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},

@@ -82,11 +82,8 @@ export default function App() {
   };
 
   const handleAppClose = () => {
-    // Безопасный вызов метода Wails д��я закрытия приложения
     if ((window as any).runtime && (window as any).runtime.Quit) {
       (window as any).runtime.Quit();
-    } else {
-      console.log('Закрытие окна (Wails runtime не найден)');
     }
   };
 
@@ -100,13 +97,14 @@ export default function App() {
 
   return (
     <div className="qt-window-bg">
-      {/* Жестко заданный контейнер 9:16 */}
       <div className="qt-app-container">
         
-        {/* === КАСТОМНЫЙ ТАЙТЛБАР ОКНА ДЛЯ WAILS === */}
         <div className="qt-window-titlebar">
-          <div className="qt-window-title">КСП СТЫК</div>
-          <button onClick={handleAppClose} className="qt-window-close-btn" title="Закрыть">
+          <div className="qt-window-title">
+            <img src={logo} alt="icon" className="qt-window-icon" />
+            КСП СТЫК
+          </div>
+          <button onClick={handleAppClose} className="qt-window-close-btn">
             <X size={14} />
           </button>
         </div>
@@ -119,7 +117,7 @@ export default function App() {
               <h1 className="qt-title">СТЫК</h1>
             </div>
           </div>
-          <button onClick={() => setIsModalOpen(true)} className="qt-btn qt-btn-icon" title="Добавить диск">
+          <button onClick={() => setIsModalOpen(true)} className="qt-btn qt-btn-icon">
             <Plus size={18} />
           </button>
         </header>
