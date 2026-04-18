@@ -1,24 +1,53 @@
+import { option } from "framer-motion/client";
+import { AuthorizeService, MountCloud, } from "../wailsjs/go/main/App.js"
+
 export type ProviderType = 'Yandex' | 'Nextcloud' | 'Google' | 'WebDAV';
 
-export const openBrowserAuth = async (provider: ProviderType): Promise<boolean> => {
+interface DiskOptions
+{
+  MountPath        :string,
+	CacheSizeInBytes :number,
+	CacheMode        :any,
+}
+
+export const openBrowserAuth = async (provider: ProviderType): Promise<string> => {
   console.log(`[System Logic] Открытие браузера для авторизации в: ${provider}...`);
   
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      console.log(`[System Logic] Успешная авторизация в ${provider}!`);
-      resolve(true);
-    }, 3000);
+  return new Promise(async (resolve, reject) => {
+
+    switch (provider){
+      case "Yandex":{
+      const {token, err } = await AuthorizeService(0)
+
+      if (err != ""){
+        reject(`Error with ${provider} with error ${err}`)
+      }
+
+      if(token === null || token.type == 'undefine' || token === ""){
+          reject(`Error with ${provider} Empty token`)        
+      }
+
+
+      resolve(token)
+      }
+    }
+
+    
   });
 };
 
-export const mountDriveLogic = async (provider: ProviderType, formData: Record<string, string>): Promise<boolean> => {
-  console.log(`[System Logic] Вызов команды монтирования для ${provider} с данными:`, formData);
+export const mountDriveLogicOauth = async (provider: ProviderType, token:any, options:DiskOptions): Promise<boolean> => {
+  console.log(`[System Logic] Вызов команды монтирования для ${provider} с данными:`);
   
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      console.log(`[System Logic] Диск ${provider} успешно смонтирован!`);
-      resolve(true);
-    }, 1000);
+  return new Promise(async(resolve, reject) => {
+    switch (provider){
+     case "Yandex":{
+      const err = await MountCloud(0, token, options)
+      if (err === "") reject(err)
+      resolve(true)
+     }
+    
+  }
   });
 };
 

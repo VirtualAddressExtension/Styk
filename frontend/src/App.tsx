@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cloud, HardDrive, Plus, X, Trash2, Server, Shield, Loader2, Filter, Settings } from 'lucide-react';
 import logo from './assets/images/logo-universal.png';
-import { ProviderType, openBrowserAuth, mountDriveLogic, unmountDriveLogic } from './logic.js';
+import { ProviderType, openBrowserAuth, mountDriveLogicOauth, unmountDriveLogic } from './logic.js';
 import './App.css';
 
 interface CloudProvider {
@@ -38,8 +38,8 @@ export default function App() {
     const [step, setStep] = useState<1 | 2>(1);
     const [selectedProvider, setSelectedProvider] = useState<CloudProvider | null>(null);
 
-    const [filterProvider, setFilterProvider] = useState<string>('All');
-    const [filterSize, setFilterSize] = useState<string>('All');
+  const [filterProvider, setFilterProvider] = useState<string>('All');
+  const [filterSize, setFilterSize] = useState<string>('All');
 
     const [appTheme, setAppTheme] = useState<'system' | 'dark' | 'light'>('system');
 
@@ -80,22 +80,38 @@ export default function App() {
         mediaQuery.addEventListener('change', handler);
         return () => mediaQuery.removeEventListener('change', handler);
     }, [appTheme]);
+  useEffect(() => {
+    let isMounted = true;
+    if (step === 2 && selectedProvider?.authType === 'oauth') {
+      openBrowserAuth(selectedProvider.id).then((success) => {
+        if (isMounted && success) handleMountSuccess(selectedProvider);
+      }).catch(e=>{isMounted == false;closeModal()});
+    }
+    return () => { isMounted = false; };
+  }, [step, selectedProvider]);
 
-    useEffect(() => {
-        let isMounted = true;
-        if (step === 2 && selectedProvider?.authType === 'oauth') {
-            openBrowserAuth(selectedProvider.id).then((success) => {
-                if (isMounted && success) handleMountSuccess(selectedProvider);
-            });
-        }
-        return () => { isMounted = false; };
-    }, [step, selectedProvider]);
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProvider) return;
+    /* rework this for correct data */
+    const success = await mountDriveLogicOauth(selectedProvider.id,
+       "", 
+      {
+        MountPath:"",
+        CacheSizeInBytes:0,
+        CacheMode:null
+      }).catch(e=>console.log(e));
+    if (success) handleMountSuccess(selectedProvider);
+  };
 
-    const handleFormSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!selectedProvider) return;
-        const success = await mountDriveLogic(selectedProvider.id, { info: "data" });
-        if (success) handleMountSuccess(selectedProvider);
+  const handleMountSuccess = (provider: CloudProvider) => {
+    const newDrive: MountedDrive = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: `Новый ${provider.name}`,
+      provider: provider.id,
+      totalSpace: Math.floor(Math.random() * 500) + 50,
+      usedSpace: Math.floor(Math.random() * 50),
+      letter: `${String.fromCharCode(65 + Math.floor(Math.random() * 26))}:`
     };
 
     const handleMountSuccess = (provider: CloudProvider) => {
