@@ -1,29 +1,22 @@
-/* ========================================================== */
-/* BREEZE DARK QT THEME & 9:16 LOCKED LAYOUT                  */
-/* ========================================================== */
-
 body {
     margin: 0;
     padding: 0;
     font-family: "Noto Sans", "Ubuntu", "Segoe UI", sans-serif;
-    background-color: #121212; /* Черный фон вокруг приложения (для веба) */
-    color: #eff0f1; /* Светлый текст KDE Breeze Dark */
+    background-color: #121212;
+    color: #eff0f1;
     font-size: 13px;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    overflow: hidden; /* Запрещаем скролл страницы */
+    overflow: hidden;
 }
 
-/* ========================================================== */
-/* ЖЕСТКИЙ КОНТЕЙНЕР 9:16                                     */
-/* ========================================================== */
 .qt-app-container {
     width: 405px;
     height: 720px;
-    background: #232629; /* Темно-серый фон окна Qt */
-    border: 1px solid #4d5057; /* Системный бордер */
+    background: #232629;
+    border: 1px solid #4d5057;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     display: flex;
     flex-direction: column;
@@ -31,11 +24,58 @@ body {
     overflow: hidden;
 }
 
-/* ========================================================== */
-/* ШАПКА                                                      */
-/* ========================================================== */
+.qt-window-titlebar {
+    height: 24px;
+    background: #232629;
+    border-bottom: 1px solid #31363b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    --wails-draggable: drag;
+    -webkit-app-region: drag;
+    user-select: none;
+}
+
+.qt-window-title {
+    font-size: 10px;
+    color: #76797c;
+    padding-left: 8px;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.qt-window-icon {
+    width: 14px;
+    height: 14px;
+    object-fit: contain;
+    -webkit-user-drag: none;
+}
+
+.qt-window-close-btn {
+    height: 24px;
+    width: 36px;
+    background: transparent;
+    border: none;
+    color: #da4453;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    --wails-draggable: no-drag;
+    -webkit-app-region: no-drag;
+}
+
+.qt-window-close-btn:hover {
+    background-color: #da4453;
+    color: #ffffff;
+}
+
 .qt-header {
-    background: #31363b; /* Чуть светлее фона окна */
+    background: #31363b;
     border-bottom: 1px solid #4d5057;
     padding: 10px 14px;
     display: flex;
@@ -50,12 +90,9 @@ body {
 }
 
 .qt-logo {
-    width: 32px;
-    height: 32px;
-    border: 1px solid #4d5057;
-    background: #232629;
-    padding: 2px;
-    border-radius: 2px;
+    width: 38px;
+    height: 38px;
+    object-fit: contain;
 }
 
 .qt-titles {
@@ -78,9 +115,6 @@ body {
     letter-spacing: 1px;
 }
 
-/* ========================================================== */
-/* ТУЛБАР И ФИЛЬТРЫ                                           */
-/* ========================================================== */
 .qt-toolbar {
     background: #2a2e32;
     padding: 8px 14px;
@@ -98,30 +132,29 @@ body {
 
 .qt-flex-1 {
     flex: 1;
-    min-width: 0; /* Чтобы select не распирал флекс */
+    min-width: 0;
 }
 
-/* ========================================================== */
-/* РАБОЧАЯ ОБЛАСТЬ (Список в 1 колонку для 9:16)              */
-/* ========================================================== */
 .qt-workspace {
-    background: #1b1e20; /* Цвет рабочей области (виджета списка) */
+    background: #1b1e20;
     padding: 14px;
     flex-grow: 1;
-    overflow-y: auto; /* Внутренний скролл для дисков */
+    overflow-y: auto;
 }
 
-/* Стилизация скроллбара под Qt */
 .qt-workspace::-webkit-scrollbar {
     width: 8px;
 }
+
 .qt-workspace::-webkit-scrollbar-track {
     background: #232629;
     border-left: 1px solid #4d5057;
 }
+
 .qt-workspace::-webkit-scrollbar-thumb {
     background: #4d5057;
 }
+
 .qt-workspace::-webkit-scrollbar-thumb:hover {
     background: #3daee9;
 }
@@ -141,9 +174,6 @@ body {
     gap: 12px;
 }
 
-/* ========================================================== */
-/* КАРТОЧКА ДИСКА                                             */
-/* ========================================================== */
 .qt-card {
     background: #232629;
     border: 1px solid #4d5057;
@@ -153,7 +183,7 @@ body {
 }
 
 .qt-card:hover {
-    border-color: #3daee9; /* Акцент KDE */
+    border-color: #3daee9;
 }
 
 .qt-card-header {
@@ -199,7 +229,6 @@ body {
     color: #eff0f1;
 }
 
-/* Системный прогресс-бар */
 .qt-progress-bar {
     height: 12px;
     background: #1b1e20;
@@ -210,16 +239,13 @@ body {
 
 .qt-progress-fill {
     height: 100%;
-    background: #3daee9; /* Классический синий бар */
+    background: #3daee9;
 }
 
 .qt-card-footer {
     padding: 0 10px 10px;
 }
 
-/* ========================================================== */
-/* UI ЭЛЕМЕНТЫ (Кнопки, Инпуты)                               */
-/* ========================================================== */
 .qt-btn {
     background-color: #31363b;
     border: 1px solid #4d5057;
@@ -248,6 +274,7 @@ body {
     border-color: #3daee9;
     color: #ffffff;
 }
+
 .qt-btn:active {
     background-color: #2b79a3;
 }
@@ -257,6 +284,7 @@ body {
     color: #ffffff;
     border-color: #3daee9;
 }
+
 .qt-btn-primary:hover {
     background-color: #49b5eb;
 }
@@ -281,13 +309,10 @@ body {
     border-color: #3daee9;
 }
 
-/* ========================================================== */
-/* МОДАЛЬНОЕ ОКНО (Абсолютное позиционирование внутри окна)   */
-/* ========================================================== */
 .qt-dialog-overlay {
-    position: absolute; /* Теперь только внутри qt-app-container */
+    position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.6); 
+    background: rgba(0, 0, 0, 0.6);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -323,7 +348,10 @@ body {
     color: #a5a9ad;
     padding: 2px;
 }
-.qt-dialog-close:hover { color: #da4453; }
+
+.qt-dialog-close:hover {
+    color: #da4453;
+}
 
 .qt-dialog-content {
     padding: 14px;
@@ -354,6 +382,7 @@ body {
     text-align: left;
     color: #eff0f1;
 }
+
 .qt-list-item:hover {
     background: #3daee9;
     color: #fff;
@@ -399,51 +428,4 @@ body {
 
 @keyframes spin {
     to { transform: rotate(360deg); }
-}
-
-/* ========================================================== */
-/* КАСТОМНЫЙ ТАЙТЛБАР (WAILS WINDOW CONTROLS)                 */
-/* ========================================================== */
-.qt-window-titlebar {
-    height: 24px;
-    background: #232629; 
-    border-bottom: 1px solid #31363b;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    
-    /* Делаем область перетаскиваемой (специфично для Wails/Electron) */
-    --wails-draggable: drag;
-    -webkit-app-region: drag;
-    user-select: none;
-}
-
-.qt-window-title {
-    font-size: 10px;
-    color: #76797c;
-    padding-left: 10px;
-    letter-spacing: 0.5px;
-    font-weight: 600;
-}
-
-.qt-window-close-btn {
-    height: 24px;
-    width: 36px;
-    background: transparent;
-    border: none;
-    color: #da4453; /* Красный крестик */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    
-    /* Отключаем перетаскивание на самой кнопке, иначе она не нажмется */
-    --wails-draggable: no-drag;
-    -webkit-app-region: no-drag;
-}
-
-.qt-window-close-btn:hover {
-    background-color: #da4453; /* При наведении заливаем красным */
-    color: #ffffff; /* А крестик становится белым */
 }
