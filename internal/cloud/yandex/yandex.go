@@ -4,90 +4,46 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
-	"os"
-	"path/filepath"
 
 	disk_base "styk/internal"
 	auth "styk/internal/auth/yandex"
+	"styk/utils"
 
-	"github.com/rclone/rclone/fs"
-	"github.com/rclone/rclone/lib/systemd"
-	"github.com/rclone/rclone/vfs/vfscommon"
+	"github.com/rclone/rclone/fs/config"
+	"github.com/rclone/rclone/fs/config/configmap"
 
-	_ "github.com/rclone/rclone/cmd/cmount"
-	_ "github.com/rclone/rclone/cmd/mount"
-	_ "github.com/rclone/rclone/cmd/mount2"
-	"github.com/rclone/rclone/cmd/mountlib"
-
-	_ "github.com/rclone/rclone/backend/yandex"
+	backend "github.com/rclone/rclone/backend/yandex"
 )
 
-var mountPath = func() string {
-	homedir, _ := os.UserHomeDir()
-	return filepath.Join(homedir, "YandexDrive")
-}()
-
-var mnt *mountlib.MountPoint
-
-func MountYaDisk(authToken auth.YandexToken, diskOptions disk_base.DiskOptions) error {
+func Connect(ctx context.Context, authToken auth.YandexToken, diskOptions disk_base.DiskOptions) (*disk_base.DiskConnection, error) {
 	authToken.TokenType = "OAuth"
 
 	authJSON, err := json.Marshal(authToken)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	connStr := fmt.Sprintf(`:yandex,client_id='%s',client_secret='%s',token='%s':`,
-		auth.YandexClientID,
-		auth.YandexClientSecret,
-		string(authJSON),
-	)
+	yandexConfig := configmap.Simple{
+		"type":          "yandex",
+		"token":         string(authJSON),
+		"client_id":     auth.YandexClientID,
+		"client_secret": auth.YandexClientSecret,
+	}
 
-	ctx := context.Background()
+	configName := fmt.Sprintf("styk-yandex-%s", utils.SanitizeFolderName(diskOptions.RemoteMountPath))
+	config.Data().SetValue(configName, "type", "yandex")
+	config.Data().SetValue(configName, "token", string(authJSON))
+	config.Data().SetValue(configName, "client_id", auth.YandexClientID)
+	config.Data().SetValue(configName, "client_secret", auth.YandexClientSecret)
+	config.ShowConfig()
 
-	myFs, err := fs.NewFs(ctx, connStr)
+	diskFs, err := backend.NewFs(ctx, configName, diskOptions.RemoteMountPath, yandexConfig)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	vfsOpt := vfscommon.Opt
-	vfsOpt.CacheMode = diskOptions.CacheMode
-	vfsOpt.CacheMaxSize = fs.SizeSuffix(diskOptions.CacheSizeInBytes)
-
-	mountOpt := mountlib.Opt
-	mountOpt.AsyncRead = true
-	mountOpt.NetworkMode = true
-
-	mounthMethod, mountFn := mountlib.ResolveMountMethod("")
-	log.Print(mounthMethod)
-	log.Print(mountFn)
-	mnt = mountlib.NewMountPoint(mountFn, mountPath, myFs, &mountOpt, &vfsOpt)
-	_, err = mnt.Mount()
-
-	if err != nil {
-		return err
-	}
-
-	go func() {
-		defer systemd.Notify()()
-		err = mnt.Wait()
-		if err := <-mnt.ErrChan; err != nil {
-			log.Printf("Диск отмонтирован с ошибкой: %v", err)
-		}
-	}()
-
-	return nil
-}
-
-func UnmountYaDisk() error {
-	if mnt.UnmountFn != nil {
-		err := mnt.Unmount()
-		if err != nil {
-			return err
-		} else {
-			return nil
-		}
-	}
-	return nil
+	return &disk_base.DiskConnection{
+		DiskFs:     diskFs,
+		ConfigName: configName,
+	}, nil
 }

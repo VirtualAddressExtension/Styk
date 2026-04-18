@@ -7,12 +7,20 @@ export function AuthorizeService(arg1:main.CloudServices):Promise<any|string>;
 
 export function CloseApp():Promise<void>;
 
+export function ConnectToCloud(arg1:main.CloudServices,arg2:Record<string, any>,arg3:disk_base.DiskOptions):Promise<string>;
+
+export function DisconnectFromCloud(arg1:main.CloudServices,arg2:string):Promise<string>;
+
+export function GetHomeDir():Promise<string>;
+
 export function HideApp():Promise<void>;
 
 export function IsAppHidden():Promise<boolean>;
 
-export function MountCloud(arg1:main.CloudServices,arg2:any,arg3:disk_base.DiskOptions):Promise<string>;
+export function MountCloudToLocal(arg1:main.CloudServices,arg2:string,arg3:string):Promise<string>;
+
+export function SelectDirectory():Promise<string>;
 
 export function ShowApp():Promise<void>;
 
-export function UnmountCloud(arg1:main.CloudServices):Promise<string>;
+export function UnmountCloud(arg1:string):Promise<string>;

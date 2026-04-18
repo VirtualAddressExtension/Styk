@@ -10,6 +10,18 @@ export function CloseApp() {
   return window['go']['main']['App']['CloseApp']();
 }
 
+export function ConnectToCloud(arg1, arg2, arg3) {
+  return window['go']['main']['App']['ConnectToCloud'](arg1, arg2, arg3);
+}
+
+export function DisconnectFromCloud(arg1, arg2) {
+  return window['go']['main']['App']['DisconnectFromCloud'](arg1, arg2);
+}
+
+export function GetHomeDir() {
+  return window['go']['main']['App']['GetHomeDir']();
+}
+
 export function HideApp() {
   return window['go']['main']['App']['HideApp']();
 }
@@ -18,8 +30,12 @@ export function IsAppHidden() {
   return window['go']['main']['App']['IsAppHidden']();
 }
 
-export function MountCloud(arg1, arg2, arg3) {
-  return window['go']['main']['App']['MountCloud'](arg1, arg2, arg3);
+export function MountCloudToLocal(arg1, arg2, arg3) {
+  return window['go']['main']['App']['MountCloudToLocal'](arg1, arg2, arg3);
+}
+
+export function SelectDirectory() {
+  return window['go']['main']['App']['SelectDirectory']();
 }
 
 export function ShowApp() {

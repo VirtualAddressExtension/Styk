@@ -4,7 +4,7 @@
         {
             "label": "wails_debug_build",
             "type": "shell",
-            "command": "wails build -debug"
+            "command": "wails build -debug -tags=cmount"
         }
     ]
 }

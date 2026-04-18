@@ -1,7 +1,8 @@
 export namespace disk_base {
 	
 	export class DiskOptions {
-	    MountPath: string;
+	    RemoteMountPath: string;
+	    LocalMountPath: string;
 	    CacheSizeInBytes: number;
 	    CacheMode: number;
 	
@@ -11,7 +12,8 @@ export namespace disk_base {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.MountPath = source["MountPath"];
+	        this.RemoteMountPath = source["RemoteMountPath"];
+	        this.LocalMountPath = source["LocalMountPath"];
 	        this.CacheSizeInBytes = source["CacheSizeInBytes"];
 	        this.CacheMode = source["CacheMode"];
 	    }

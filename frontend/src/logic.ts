@@ -1,59 +1,65 @@
-import { option } from "framer-motion/client";
-import { AuthorizeService, MountCloud, } from "../wailsjs/go/main/App.js"
+import { AuthorizeService, ConnectToCloud, MountCloudToLocal, UnmountCloud } from "../wailsjs/go/main/App.js";
+import { disk_base } from "../wailsjs/go/models.js";
 
-export type ProviderType = 'Yandex' | 'Nextcloud' | 'Google' | 'WebDAV';
+export type ProviderType = 'Yandex' | 'Nextcloud' // | 'Google' | 'WebDAV';
 
-interface DiskOptions
-{
-  MountPath        :string,
-	CacheSizeInBytes :number,
-	CacheMode        :any,
-}
+// Маппинг для соответствия Go CloudServices enum
+const ServiceMap: Record<ProviderType, number> = {
+    'Yandex': 0,
+    'Nextcloud': 1,
+    // 'Google': 2, // Добавь в Go если нужно
+    // 'WebDAV': 3  // Добавь в Go если нужно
+};
 
-export const openBrowserAuth = async (provider: ProviderType): Promise<string> => {
-  console.log(`[System Logic] Открытие браузера для авторизации в: ${provider}...`);
-  
-  return new Promise(async (resolve, reject) => {
+export const openBrowserAuth = async (provider: ProviderType): Promise<any> => {
+    console.log(`[System Logic] Авторизация в: ${provider}...`);
+    const serviceId = ServiceMap[provider];
+    
+    // В Wails v2 множественные возвращаемые значения приходят как массив или объект
+    // Судя по app.go: (any, string). Обычно Wails возвращает массив [data, error]
+    const result = await AuthorizeService(serviceId);
+    
+    // Если в Go вернулась ошибка во втором параметре
+    if (Array.isArray(result) && result[1] !== "") {
+        throw new Error(result[1]);
+    }
+    
+    return Array.isArray(result) ? result[0] : result;
+};
 
-    switch (provider){
-      case "Yandex":{
-      const token = await AuthorizeService(0)
-      
-      if (token === null) {
-        reject("Iternal Error")
-      }
+export const mountDriveLogicOauth = async (
+    provider: ProviderType, 
+    token: any, 
+    options: { MountPath: string, CacheSizeInBytes: number, CacheMode: number }
+): Promise<boolean> => {
+    const serviceId = ServiceMap[provider];
 
-      resolve(token)
-      
-      }
+    // 1. Сначала подключаемся к облаку (создаем fs.Fs в памяти Go)
+    const diskOpts = new disk_base.DiskOptions({
+        RemoteMountPath: "/", // Корень по умолчанию
+        LocalMountPath: options.MountPath,
+        CacheSizeInBytes: options.CacheSizeInBytes,
+        CacheMode: options.CacheMode
+    });
+
+    const connectError = await ConnectToCloud(serviceId, token, diskOpts);
+    if (connectError !== "") {
+        throw new Error(`Connect error: ${connectError}`);
     }
 
-    
-  });
+    // 2. Теперь монтируем (FUSE + Union)
+    const mountError = await MountCloudToLocal(serviceId, options.MountPath, "/");
+    if (mountError !== "") {
+        throw new Error(`Mount error: ${mountError}`);
+    }
+
+    return true;
 };
 
-export const mountDriveLogicOauth = async (provider: ProviderType, token:any, options:DiskOptions): Promise<boolean> => {
-  console.log(`[System Logic] Вызов команды монтирования для ${provider} с данными:`);
-  
-  return new Promise(async(resolve, reject) => {
-    switch (provider){
-     case "Yandex":{
-      const err = await MountCloud(0, token, options)
-      if (err === "") reject(err)
-      resolve(true)
-     }
-    
-  }
-  });
-};
-
-export const unmountDriveLogic = async (driveId: string): Promise<boolean> => {
-  console.log(`[System Logic] Размонтирование системного диска с ID: ${driveId}...`);
-  
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      console.log(`[System Logic] Диск ${driveId} отключен!`);
-      resolve(true);
-    }, 500);
-  });
+export const unmountDriveLogic = async (mountPath: string): Promise<boolean> => {
+    const err = await UnmountCloud(mountPath);
+    if (err !== "") {
+        throw new Error(err);
+    }
+    return true;
 };
