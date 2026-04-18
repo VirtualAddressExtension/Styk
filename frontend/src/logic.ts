@@ -17,18 +17,14 @@ export const openBrowserAuth = async (provider: ProviderType): Promise<string> =
 
     switch (provider){
       case "Yandex":{
-      const {token, err } = await AuthorizeService(0)
-
-      if (err != ""){
-        reject(`Error with ${provider} with error ${err}`)
+      const token = await AuthorizeService(0)
+      
+      if (token === null) {
+        reject("Iternal Error")
       }
-
-      if(token === null || token.type == 'undefine' || token === ""){
-          reject(`Error with ${provider} Empty token`)        
-      }
-
 
       resolve(token)
+      
       }
     }
 
