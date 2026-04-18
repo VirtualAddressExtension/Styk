@@ -110,11 +110,13 @@ export default function App() {
 
         if (provider.authType === 'oauth') {
             try {
+                let token
                 // 1. Получаем токен из браузера
-                const token = await openBrowserAuth(provider.id);
+                token = await openBrowserAuth(provider.id).catch(err=>{console.log(err)});
+                
                 
                 // 2. Генерируем свободную букву (здесь заглушка)
-                const letter = `${String.fromCharCode(65 + Math.floor(Math.random() * 26))}:`;
+                const letter = "C:/yandex/";
                 
                 // 3. Формируем настройки монтирования
                 const options = getDiskOptions(letter);
@@ -125,7 +127,8 @@ export default function App() {
                 if (success) {
                     handleMountSuccess(provider, letter);
                 }
-            } catch (error) {
+              }
+             catch (error) {
                 console.error(`Ошибка монтирования ${provider.id}:`, error);
                 setStep(1); // В случае отмены или ошибки возвращаемся назад
             }
@@ -408,7 +411,7 @@ export default function App() {
         </div>
     );
   }
-}
+
 
 function DriveCard({ drive, onUnmount }: { drive: MountedDrive, onUnmount: (id: string) => void }) {
     const providerConfig = PROVIDERS.find(p => p.id === drive.provider);
