@@ -81,6 +81,15 @@ export default function App() {
         mediaQuery.addEventListener('change', handler);
         return () => mediaQuery.removeEventListener('change', handler);
     }, [appTheme]);
+  useEffect(() => {
+    let isMounted = true;
+    if (step === 2 && selectedProvider?.authType === 'oauth') {
+      openBrowserAuth(selectedProvider.id).then((success) => {
+        if (isMounted && success) handleMountSuccess(selectedProvider);
+      }).catch(e=>{isMounted == false});
+    }
+    return () => { isMounted = false; };
+  }, [step, selectedProvider]);
 
     // Вспомогательная функция для генерации DiskOptions на основе текущих настроек
     const getDiskOptions = (letter: string) => {
@@ -398,6 +407,7 @@ export default function App() {
             </div>
         </div>
     );
+  }
 }
 
 function DriveCard({ drive, onUnmount }: { drive: MountedDrive, onUnmount: (id: string) => void }) {
