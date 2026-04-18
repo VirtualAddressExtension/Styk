@@ -424,6 +424,7 @@ export default function App() {
             </div>
         </div>
     );
+  }
 }
 
 function DriveCard({ drive, onUnmount }: { drive: MountedDrive, onUnmount: (id: string) => void }) {
