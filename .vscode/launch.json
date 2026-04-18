@@ -17,6 +17,13 @@
             "windows": {
                 "program": "${workspaceFolder}/build/bin/styk.exe"
             }
+        },
+        {
+            "name": "Отладить Web-часть",
+            "request": "launch",
+            "type": "chrome",
+            "url": "http://localhost:34115",
+            "webRoot": "${workspaceFolder}"
         }
     ]
 }

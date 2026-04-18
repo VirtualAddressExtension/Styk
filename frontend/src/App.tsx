@@ -28,7 +28,7 @@ interface MountedDrive {
     name: string;
     provider: ProviderType;
     totalSpace: number;
-    usedSpace: number;
+    usedSpace: number;  
     letter: string;
     links?: FolderLink[];
 }
@@ -109,6 +109,15 @@ export default function App() {
         mediaQuery.addEventListener('change', handler);
         return () => mediaQuery.removeEventListener('change', handler);
     }, [appTheme]);
+  useEffect(() => {
+    let isMounted = true;
+    if (step === 2 && selectedProvider?.authType === 'oauth') {
+      openBrowserAuth(selectedProvider.id).then((success) => {
+        if (isMounted && success) console.log(1);
+      }).catch(e=>{isMounted == false});
+    }
+    return () => { isMounted = false; };
+  }, [step, selectedProvider]);
 
     const getDiskOptions = (letter: string) => {
         const bytesMultipliers: Record<string, number> = { MB: 1048576, GB: 1073741824, TB: 1099511627776 };
@@ -127,15 +136,26 @@ export default function App() {
 
         if (provider.authType === 'oauth') {
             try {
-                const token = await openBrowserAuth(provider.id);
-                const letter = `${String.fromCharCode(65 + Math.floor(Math.random() * 26))}:`;
+                let token
+                // 1. Получаем токен из браузера
+                token = await openBrowserAuth(provider.id).catch(err=>{console.log(err)});
+                
+                
+                // 2. Генерируем свободную букву (здесь заглушка)
+                const letter = "C:/yandex/";
+                
+                // 3. Формируем настройки монтирования
                 const options = getDiskOptions(letter);
 
                 const success = await mountDriveLogicOauth(provider.id, token, options);
-                if (success) handleMountSuccess(provider, letter);
-            } catch (error) {
-                console.error(`Ошибка при авторизации/монтировании ${provider.id}:`, error);
-                setStep(1);
+                
+                if (success) {
+                    handleMountSuccess(provider, letter);
+                }
+              }
+             catch (error) {
+                console.error(`Ошибка монтирования ${provider.id}:`, error);
+                setStep(1); // В случае отмены или ошибки возвращаемся назад
             }
         }
     };
@@ -638,7 +658,8 @@ export default function App() {
             </div>
         </div>
     );
-}
+  }
+
 
 function DriveCard({ 
     drive, 
