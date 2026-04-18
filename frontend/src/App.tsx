@@ -83,11 +83,7 @@ export default function App() {
     }, [appTheme]);
   useEffect(() => {
     let isMounted = true;
-    if (step === 2 && selectedProvider?.authType === 'oauth') {
-      openBrowserAuth(selectedProvider.id).then((success) => {
-        if (isMounted && success) console.log(1);
-      }).catch(e=>{isMounted == false});
-    }
+
     return () => { isMounted = false; };
   }, [step, selectedProvider]);
 
