@@ -19,7 +19,7 @@ var assets embed.FS
 var icon []byte
 
 //go:embed build/windows/icon.ico
-var icon_windows []byte
+var iconWindows []byte
 
 func main() {
 	app := NewApp()
@@ -27,7 +27,7 @@ func main() {
 	systray.Register(func() {
 		var ico []byte
 		if platform := runtime.GOOS; platform == "windows" {
-			ico = icon_windows
+			ico = iconWindows
 		} else {
 			ico = icon
 		}
@@ -64,6 +64,7 @@ func main() {
 		},
 		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
 		OnStartup:        app.startup,
+		OnShutdown:       app.shutdown,
 		Bind: []any{
 			app,
 		},
