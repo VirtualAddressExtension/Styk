@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	disk_base "styk/internal"
 	"styk/internal/sync"
 	"time"
@@ -59,6 +60,10 @@ func CreateDiskMountPoint(ctx context.Context, mountPoint string, localConnectio
 		return nil, fmt.Errorf("Failed to find suitable mount method")
 	} else {
 		log.Printf("Метод монтирования: %s", mountMethod)
+	}
+
+	if runtime.GOOS == "linux" {
+		os.MkdirAll(mountPoint, 0755)
 	}
 
 	mountOpt := mountlib.Opt
