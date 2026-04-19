@@ -31,7 +31,7 @@ func (d *DiskMountPoint) Unmount() error {
 func CreateDiskMountPoint(ctx context.Context, mountPoint string, localConnection *disk_base.DiskConnection, remoteConnection *disk_base.DiskConnection) (*DiskMountPoint, error) {
 	unionConfig := configmap.Simple{
 		"type":          "union",
-		"upstreams":     fmt.Sprintf("%s %s", localConnection.ConfigName, remoteConnection.ConfigName),
+		"upstreams":     fmt.Sprintf("%s:%s %s:%s", localConnection.ConfigName, localConnection.ConnectionPoint, remoteConnection.ConfigName, remoteConnection.ConnectionPoint),
 		"action_policy": "ff",
 		"create_policy": "ff",
 		"search_policy": "ff",
@@ -45,7 +45,7 @@ func CreateDiskMountPoint(ctx context.Context, mountPoint string, localConnectio
 	bisyncDb := filepath.Join(cache, "styk/bisync")
 	os.MkdirAll(bisyncDb, 0755)
 
-	engine := sync.NewSyncEngine(localConnection.DiskFs, remoteConnection.DiskFs, localConnection.DiskFs.Root(), bisyncDb)
+	engine := sync.NewSyncEngine(localConnection.DiskFs, remoteConnection.DiskFs, localConnection.ConnectionPoint, bisyncDb)
 	engine.Start(ctx)
 
 	vfsOpt := vfscommon.Opt

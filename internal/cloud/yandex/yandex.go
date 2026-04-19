@@ -43,7 +43,8 @@ func Connect(ctx context.Context, authToken auth.YandexToken, diskOptions disk_b
 	}
 
 	return &disk_base.DiskConnection{
-		DiskFs:     diskFs,
-		ConfigName: configName,
+		DiskFs:          diskFs,
+		ConfigName:      configName,
+		ConnectionPoint: diskOptions.RemoteMountPath,
 	}, nil
 }

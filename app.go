@@ -163,12 +163,12 @@ func (a *App) MountCloudToLocal(service CloudServices, mountPath string, remoteP
 		return "Remote path doesn't connected"
 	}
 
-	var localCloudFolder = fmt.Sprintf("styk/local_files/%s_%s_", localizeCloudService(service), utils.SanitizeFolderName(remotePath))
+	var localCloudFolder = filepath.Join(cache, fmt.Sprintf("styk/local_files/%s_%s_", localizeCloudService(service), utils.SanitizeFolderName(remotePath)))
 	os.MkdirAll(localCloudFolder, 0755)
 
 	localDiskConnection, err := local_cloud.Connect(a.ctx, disk_base.DiskOptions{
 		RemoteMountPath:  "/",
-		LocalMountPath:   filepath.Join(cache, localCloudFolder),
+		LocalMountPath:   localCloudFolder,
 		CacheSizeInBytes: a.cacheSizeInBytes,
 		CacheMode:        a.cacheMode,
 	})

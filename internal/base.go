@@ -19,6 +19,7 @@ type DiskOptions struct {
 }
 
 type DiskConnection struct {
-	DiskFs     fs.Fs
-	ConfigName string
+	DiskFs          fs.Fs
+	ConfigName      string
+	ConnectionPoint string
 }
